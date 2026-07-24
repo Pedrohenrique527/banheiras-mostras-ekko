@@ -28,6 +28,7 @@ function normalizeStatus(location: string) {
 }
 
 function isOwner(actor: AnyRecord) {
+  if (actor.is_owner === true) return true;
   const ownerEmail = (process.env.SYSTEM_OWNER_EMAIL || "admin@ekko.com.br").toLowerCase();
   return String(actor.email || "").toLowerCase() === ownerEmail;
 }
@@ -193,8 +194,8 @@ export async function POST(request: Request) {
     const current = currentSnap.data() as AnyRecord | undefined;
     if (!current || !visibleMaterial(current)) return Response.json({ error: "Produto nao encontrado." }, { status: 404 });
 
-    const fields = ["name", "code", "photo_url", "category", "brand", "model", "color", "dimensions", "description", "source_ref", "invoice_number", "invoice_date", "invoice_link", "invoice_note", "entry_date"];
-    const labels: Record<string, string> = { name: "Nome", code: "Codigo", photo_url: "Foto", category: "Categoria", brand: "Marca", model: "Modelo", color: "Cor", dimensions: "Dimensoes", description: "Observacoes", source_ref: "Pedido / referencia", invoice_number: "Numero da nota fiscal", invoice_date: "Data da nota fiscal", invoice_link: "Link da nota fiscal", invoice_note: "Observacao da nota fiscal", entry_date: "Data de entrada" };
+    const fields = ["name", "code", "photo_url", "category", "brand", "model", "color", "dimensions", "description", "source_ref", "invoice_number", "invoice_date", "invoice_link", "invoice_note", "entry_date", "status"];
+    const labels: Record<string, string> = { name: "Nome", code: "Codigo", photo_url: "Foto", category: "Categoria", brand: "Marca", model: "Modelo", color: "Cor", dimensions: "Dimensoes", description: "Observacoes", source_ref: "Pedido / referencia", invoice_number: "Numero da nota fiscal", invoice_date: "Data da nota fiscal", invoice_link: "Link da nota fiscal", invoice_note: "Observacao da nota fiscal", entry_date: "Data de entrada", status: "Status" };
     const changes = fields.filter((field) => String(current[field] || "") !== String(incoming[field] || ""));
 
     if (changes.length === 0) return Response.json({ ok: true });
@@ -303,6 +304,7 @@ export async function POST(request: Request) {
   if (action === "createUser") {
     if (!isOwner(actor)) return Response.json({ error: "Somente o proprietario do sistema pode criar acessos e permissoes." }, { status: 403 });
     const newUser = payload.user as Record<string, string>;
+    if (!newUser.name?.trim() || !newUser.email?.trim()) return Response.json({ error: "Informe nome e e-mail do usuário." }, { status: 400 });
     if (!newUser.password || newUser.password.length < 8) return Response.json({ error: "A senha inicial deve ter ao menos 8 caracteres." }, { status: 400 });
 
     const normalizedEmail = newUser.email.trim().toLowerCase();
@@ -317,7 +319,9 @@ export async function POST(request: Request) {
       email: newUser.email,
       email_normalized: normalizedEmail,
       password_hash: await hashPassword(newUser.password),
-      role: newUser.role || "Usuario",
+      role: ["Administrador", "Gerente", "Diretor", "Usuário", "Usuario"].includes(newUser.role) ? newUser.role : "Usuário",
+      is_owner: false,
+      must_change_password: true,
       active: true,
       created_at: now,
     });
@@ -348,14 +352,30 @@ export async function POST(request: Request) {
     const target = snap.data() as AnyRecord | undefined;
     if (!target) return Response.json({ error: "Usuario nao encontrado." }, { status: 404 });
 
-    const nextRole = String(access.role || target.role || "Usuario");
+    const nextName = String(access.name || target.name || "").trim();
+    const nextEmail = String(access.email || target.email || "").trim();
+    if (!nextName || !nextEmail) return Response.json({ error: "Informe nome e e-mail." }, { status: 400 });
+    const normalizedEmail = nextEmail.toLowerCase();
+    if (normalizedEmail !== String(target.email_normalized || target.email || "").toLowerCase()) {
+      const existing = await db.collection("users").where("email_normalized", "==", normalizedEmail).limit(1).get();
+      if (!existing.empty && existing.docs[0].id !== targetUserId) return Response.json({ error: "Ja existe um acesso com este e-mail." }, { status: 409 });
+    }
+    const requestedRole = String(access.role || target.role || "Usuario");
+    const nextRole = ["Administrador", "Gerente", "Diretor", "Usuário", "Usuario"].includes(requestedRole) ? requestedRole : String(target.role || "Usuário");
     const nextActive = typeof access.active === "boolean" ? access.active : Boolean(target.active);
     const reason = String(access.reason || "").trim();
     const statusText = nextActive ? "Ativo" : "Acesso removido";
+    const nextPassword = String(access.password || "").trim();
+    if (nextPassword && nextPassword.length < 8) return Response.json({ error: "A nova senha deve ter ao menos 8 caracteres." }, { status: 400 });
 
     await ref.update({
+      name: nextName,
+      email: nextEmail,
+      email_normalized: normalizedEmail,
       role: nextRole,
       active: nextActive,
+      ...(nextPassword ? { password_hash: await hashPassword(nextPassword), must_change_password: targetUserId === actor.id ? false : true } : {}),
+      ...(target.is_owner || targetUserId === actor.id ? { is_owner: true } : {}),
       access_status: statusText,
       access_reason: reason,
       access_changed_by: actor.name,
@@ -376,6 +396,23 @@ export async function POST(request: Request) {
       new_value: nextRole,
       created_at: now,
     });
+    const profileChanges: Array<[string, string, string]> = [];
+    if (String(target.name || "") !== nextName) profileChanges.push(["Nome", String(target.name || ""), nextName]);
+    if (String(target.email || "") !== nextEmail) profileChanges.push(["E-mail", String(target.email || ""), nextEmail]);
+    if (nextPassword) profileChanges.push(["Senha", "Senha anterior", targetUserId === actor.id ? "Senha atualizada" : "Nova senha inicial"]);
+    profileChanges.forEach(([field, previous, next]) => {
+      const profileAudit = id("AUD");
+      batch.set(db.collection("audit_logs").doc(profileAudit), {
+        id: profileAudit,
+        user_id: actor.id,
+        action: "Alteracao de cadastro de usuario",
+        material_id: null,
+        changed_field: `${field}: ${target.email}`,
+        previous_value: previous,
+        new_value: next,
+        created_at: now,
+      });
+    });
     if (Boolean(target.active) !== nextActive) {
       const statusAudit = id("AUD");
       batch.set(db.collection("audit_logs").doc(statusAudit), {
@@ -390,6 +427,16 @@ export async function POST(request: Request) {
       });
     }
     await batch.commit();
+    return Response.json({ ok: true });
+  }
+
+  if (action === "changePassword") {
+    const newPassword = String(payload.newPassword || "").trim();
+    if (newPassword.length < 8) return Response.json({ error: "A nova senha deve ter ao menos 8 caracteres." }, { status: 400 });
+    const ref = db.collection("users").doc(actor.id);
+    await ref.update({ password_hash: await hashPassword(newPassword), must_change_password: false, password_changed_at: now, updated_at: now });
+    const auditId = id("AUD");
+    await db.collection("audit_logs").doc(auditId).set({ id: auditId, user_id: actor.id, action: "Alteracao de senha", material_id: null, changed_field: "Senha", previous_value: "Senha inicial", new_value: "Senha definida pelo usuario", created_at: now });
     return Response.json({ ok: true });
   }
 

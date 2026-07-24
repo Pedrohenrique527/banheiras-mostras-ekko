@@ -1,13 +1,15 @@
 ﻿"use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 type User = {
   id: string;
   name: string;
   email: string;
-  role: "Administrador" | "Gerente" | "Usuário";
+  role: "Administrador" | "Gerente" | "Diretor" | "Usuário" | "Usuario";
   active?: number;
+  is_owner?: boolean;
+  must_change_password?: boolean;
   created_at?: string;
   access_status?: string;
   access_reason?: string;
@@ -136,12 +138,13 @@ function Photo({ material, className = "" }: { material: Material; className?: s
 }
 
 function Status({ value }: { value: string }) {
-  const normalized = value.toLowerCase();
-  const tone = normalized.includes("disponível") ? "available"
-    : normalized.includes("exposição") ? "show"
-      : normalized.includes("manutenção") || normalized.includes("urgente") ? "warning"
-        : normalized.includes("não localizado") ? "danger"
-          : normalized.includes("cliente") ? "client" : "neutral";
+  const normalized = value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const tone = normalized.includes("disponivel") ? "available"
+    : normalized.includes("exposicao") ? "show"
+      : normalized.includes("manutencao") || normalized.includes("urgente") ? "warning"
+        : normalized.includes("nao localizado") ? "danger"
+          : normalized.includes("retirado") || normalized.includes("excluido") || normalized.includes("removido") ? "removed"
+            : normalized.includes("cliente") ? "client" : "neutral";
   return <span className={`status ${tone}`}><i />{value}</span>;
 }
 
@@ -161,6 +164,7 @@ function Login({ onLogin }: { onLogin: (user: User) => Promise<void> }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -216,8 +220,8 @@ function Login({ onLogin }: { onLogin: (user: User) => Promise<void> }) {
           <span className="kicker">ACESSO AO SISTEMA</span>
           <h2>Bem-vindo</h2>
           <p>Use suas credenciais para acessar o controle da Ekko.</p>
-          <label>E-mail<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="off" placeholder="Digite seu e-mail" required /></label>
-          <label>Senha<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="off" placeholder="Digite sua senha" required /></label>
+          <label>E-mail<input name="login-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="off" placeholder="Digite seu e-mail" required /></label>
+          <label>Senha<div className="password-field"><input name="login-password" type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" placeholder="Digite sua senha" required /><button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}>{showPassword ? "Ocultar" : "Mostrar"}</button></div></label>
           {error && <div className="form-error">{error}</div>}
           <button className="button primary wide" disabled={loading}>{loading ? "Entrando..." : "Entrar"}<span>→</span></button>
         </form>
@@ -225,6 +229,25 @@ function Login({ onLogin }: { onLogin: (user: User) => Promise<void> }) {
       </section>
     </main>
   );
+}
+
+function ForcePasswordChange({ user, onComplete }: { user: User; onComplete: (password: string) => Promise<void> }) {
+  const [password, setPassword] = useState("");
+  const [confirmation, setConfirmation] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    if (password.length < 8) return setError("A nova senha precisa ter pelo menos 8 caracteres.");
+    if (password !== confirmation) return setError("As senhas não são iguais.");
+    setSaving(true); setError("");
+    try { await onComplete(password); } catch (changeError) { setError(changeError instanceof Error ? changeError.message : "Não foi possível alterar a senha."); } finally { setSaving(false); }
+  }
+
+  return <main className="password-change-page"><form className="password-change-card" onSubmit={submit}><img src="/ekko-revestimentos-transparent.png" alt="Ekko Revestimentos" /><span className="kicker">PRIMEIRO ACESSO</span><h1>Crie sua senha pessoal</h1><p>Olá, {user.name}. Por segurança, troque a senha inicial antes de continuar.</p><label>Nova senha<div className="password-field"><input autoFocus type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} minLength={8} required /><button type="button" onClick={() => setShowPassword((value) => !value)}>{showPassword ? "Ocultar" : "Mostrar"}</button></div></label><label>Repita a nova senha<div className="password-field"><input type={showConfirmation ? "text" : "password"} value={confirmation} onChange={(event) => setConfirmation(event.target.value)} minLength={8} required /><button type="button" onClick={() => setShowConfirmation((value) => !value)}>{showConfirmation ? "Ocultar" : "Mostrar"}</button></div></label>{error && <div className="form-error">{error}</div>}<button className="button primary wide" disabled={saving}>{saving ? "Salvando..." : "Continuar"}<span>→</span></button><small>A senha deve ter no mínimo 8 caracteres.</small></form></main>;
 }
 
 function Overview({ data, onOpen, onMove, onShowAll }: {
@@ -500,7 +523,7 @@ function TeamChat({ data, user, onSaved }: { data: SystemData; user: User; onSav
 }
 
 function isOwnerUser(user: User) {
-  return user.email.toLowerCase() === "admin@ekko.com.br";
+  return Boolean(user.is_owner) || user.email.toLowerCase() === "admin@ekko.com.br";
 }
 
 function Users({ data, user, onNew, onEdit }: { data: SystemData; user: User; onNew: () => void; onEdit: (target: User) => void }) {
@@ -685,6 +708,7 @@ function EditMaterial({ material, user, onClose, onSaved }: { material: Material
           <label>Cor / acabamento<input name="color" defaultValue={material.color || ""} /></label><label>Dimensões<input name="dimensions" defaultValue={material.dimensions || ""} /></label>
           <label className="span-2">Pedido, mostra ou referência<input name="source_ref" defaultValue={material.source_ref || ""} /></label>
           <label>Data de entrada<input name="entry_date" type="date" defaultValue={material.entry_date} /></label>
+          <label>Status<select name="status" defaultValue={material.status}><option>Disponível</option><option>Em exposição</option><option>Em cliente</option><option>Em manutenção</option><option>Entrega urgente</option><option>Não localizado</option><option>Retirado</option></select></label>
           <label>Número da nota fiscal<input name="invoice_number" defaultValue={material.invoice_number || ""} /></label>
           <label>Data da nota fiscal<input name="invoice_date" type="date" defaultValue={material.invoice_date || ""} /></label>
           <label className="span-2">Link da nota fiscal<input name="invoice_link" type="url" defaultValue={material.invoice_link || ""} /></label>
@@ -786,8 +810,8 @@ function NewUser({ currentUser, onClose, onSaved }: { currentUser: User; onClose
     <Modal title="Novo usuário" subtitle="CONTROLE DE ACESSO" onClose={onClose}>
       <form className="simple-form" onSubmit={submit}>
         <label>Nome completo<input name="name" required /></label><label>E-mail<input name="email" type="email" required /></label>
-        <label>Perfil<select name="role"><option>Administrador</option><option>Gerente</option><option>Usuário</option></select></label>
-        <label>Senha inicial<input name="password" type="password" minLength={8} required /></label>
+        <label>Perfil<select name="role"><option>Administrador</option><option>Gerente</option><option>Diretor</option><option>Usuário</option></select></label>
+        <label>Senha inicial<div className="password-field"><input name="password" type="password" defaultValue="12345678" minLength={8} required /></div><small className="password-hint">Troca obrigatória no primeiro acesso.</small></label>
         {error && <div className="form-error">{error}</div>}
         <footer className="form-footer"><span /><button type="button" className="button secondary" onClick={onClose}>Cancelar</button><button className="button primary" disabled={saving}>{saving ? "Criando..." : "Criar usuário"}</button></footer>
       </form>
@@ -795,10 +819,13 @@ function NewUser({ currentUser, onClose, onSaved }: { currentUser: User; onClose
   );
 }
 
-function EditUserAccess({ target, currentUser, onClose, onSaved }: { target: User; currentUser: User; onClose: () => void; onSaved: () => Promise<void> }) {
+function EditUserAccess({ target, currentUser, onClose, onSaved }: { target: User; currentUser: User; onClose: () => void; onSaved: (updated?: Partial<User>) => Promise<void> }) {
+  const [name, setName] = useState(target.name);
+  const [email, setEmail] = useState(target.email);
   const [role, setRole] = useState(target.role);
   const [active, setActive] = useState(Boolean(target.active));
   const [reason, setReason] = useState(target.access_reason || "");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const isSelf = target.id === currentUser.id;
@@ -811,11 +838,11 @@ function EditUserAccess({ target, currentUser, onClose, onSaved }: { target: Use
       const response = await fetch("/api/system", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "updateUserAccess", targetUserId: target.id, access: { role, active, reason } }),
+        body: JSON.stringify({ action: "updateUserAccess", targetUserId: target.id, access: { name, email, role, active, reason, password } }),
       });
       const result = await response.json() as { error?: string };
       if (!response.ok) throw new Error(result.error || "Não foi possível alterar este acesso.");
-      await onSaved();
+      await onSaved({ name, email, role });
       onClose();
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Não foi possível alterar este acesso.");
@@ -827,8 +854,11 @@ function EditUserAccess({ target, currentUser, onClose, onSaved }: { target: Use
   return (
     <Modal title="Editar acesso" subtitle="PERMISSÕES DO SISTEMA" onClose={onClose}>
       <form className="simple-form" onSubmit={submit}>
-        <div className="access-target"><span className="user-avatar">{initials(target.name)}</span><div><strong>{target.name}</strong><small>{target.email}</small></div></div>
-        <label>Perfil<select value={role} onChange={(event) => setRole(event.target.value as User["role"])}><option>Administrador</option><option>Gerente</option><option>Usuário</option></select></label>
+        <div className="access-target"><span className="user-avatar">{initials(name)}</span><div><strong>{name}</strong><small>{email}</small></div></div>
+        <label>Nome completo<input value={name} onChange={(event) => setName(event.target.value)} required /></label>
+        <label>E-mail<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
+        <label>Perfil<select value={role} onChange={(event) => setRole(event.target.value as User["role"])}><option>Administrador</option><option>Gerente</option><option>Diretor</option><option>Usuário</option></select></label>
+        <label>Nova senha <small className="field-help">deixe em branco para manter a atual</small><input type="password" value={password} onChange={(event) => setPassword(event.target.value)} minLength={password ? 8 : undefined} placeholder="Somente se quiser redefinir" /></label>
         <label className="check-line"><input type="checkbox" checked={active} disabled={isSelf} onChange={(event) => setActive(event.target.checked)} /><span>Acesso ativo</span></label>
         <label>Motivo da remoção ou alteração<textarea value={reason} onChange={(event) => setReason(event.target.value)} rows={3} placeholder="Ex.: colaborador saiu, acesso temporário finalizado, mudança de função..." /></label>
         {isSelf && <div className="permission-note compact">Você não pode remover o próprio acesso principal.</div>}
@@ -892,6 +922,10 @@ export function EkkoApp() {
   const [removeMaterial, setRemoveMaterial] = useState<Material | null>(null);
   const [detailMaterial, setDetailMaterial] = useState<Material | null>(null);
   const [toast, setToast] = useState("");
+  const [teamNoticeCount, setTeamNoticeCount] = useState(0);
+  const initializedNotifications = useRef(false);
+  const lastMessageId = useRef("");
+  const lastAnnouncementId = useRef("");
 
   useEffect(() => {
     let mounted = true;
@@ -911,7 +945,11 @@ export function EkkoApp() {
   }, []);
 
   useEffect(() => {
-    if (user) void refreshData();
+    if (!user) return;
+    initializedNotifications.current = false;
+    void refreshData();
+    const timer = window.setInterval(() => { void refreshData(); }, 15000);
+    return () => window.clearInterval(timer);
   }, [user]);
 
   async function refreshData(message?: string) {
@@ -921,6 +959,22 @@ export function EkkoApp() {
       const result = await response.json() as SystemData & { error?: string };
       if (!response.ok) throw new Error(result.error || "Falha ao carregar os dados.");
       setData(result);
+      const latestMessage = result.messages[result.messages.length - 1];
+      const latestAnnouncement = result.announcements[0];
+      if (initializedNotifications.current) {
+        const newMessage = Boolean(latestMessage?.id && latestMessage.id !== lastMessageId.current);
+        const newAnnouncement = Boolean(latestAnnouncement?.id && latestAnnouncement.id !== lastAnnouncementId.current);
+        if (newMessage || newAnnouncement) {
+          setTeamNoticeCount((count) => count + (newMessage ? 1 : 0) + (newAnnouncement ? 1 : 0));
+          const noticeText = newAnnouncement ? "Novo aviso para a equipe." : "Nova mensagem no chat da equipe.";
+          setToast(noticeText);
+          window.setTimeout(() => setToast(""), 3200);
+          if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") new Notification(noticeText, { body: "Abra o sistema para conferir." });
+        }
+      }
+      lastMessageId.current = latestMessage?.id || "";
+      lastAnnouncementId.current = latestAnnouncement?.id || "";
+      initializedNotifications.current = true;
       const materialId = new URLSearchParams(window.location.search).get("material");
       if (materialId) {
         const selected = result.materials.find((item) => item.id === materialId);
@@ -941,6 +995,13 @@ export function EkkoApp() {
     setUser(loggedUser);
   }
 
+  async function completePasswordChange(password: string) {
+    const response = await fetch("/api/system", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "changePassword", newPassword: password }) });
+    const result = await response.json() as { error?: string };
+    if (!response.ok) throw new Error(result.error || "Não foi possível alterar a senha.");
+    setUser((current) => current ? { ...current, must_change_password: false } : current);
+  }
+
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
@@ -948,6 +1009,7 @@ export function EkkoApp() {
   }
 
   if (!user) return <Login onLogin={login} />;
+  if (user.must_change_password) return <ForcePasswordChange user={user} onComplete={completePasswordChange} />;
 
   return (
     <div className="app-layout">
@@ -959,7 +1021,7 @@ export function EkkoApp() {
         </div>
         <nav>
           <span className="nav-label">NAVEGAÇÃO</span>
-          {navItems.map((item) => <button key={item.key} className={nav === item.key ? "active" : ""} onClick={() => { setNav(item.key); setMobileMenu(false); }}><i>{item.icon}</i><span>{item.label}</span>{item.key === "materials" && <b>{data.materials.length}</b>}</button>)}
+          {navItems.filter((item) => item.key !== "users" || isOwnerUser(user)).map((item) => <button key={item.key} className={nav === item.key ? "active" : ""} onClick={() => { setNav(item.key); setMobileMenu(false); if (item.key === "chat") setTeamNoticeCount(0); }}><i>{item.icon}</i><span>{item.label}</span>{item.key === "materials" && <b>{data.materials.length}</b>}{item.key === "chat" && teamNoticeCount > 0 && <b className="nav-notification">{teamNoticeCount > 9 ? "9+" : teamNoticeCount}</b>}</button>)}
         </nav>
         <div className="sidebar-company"><span>Ekko Revestimentos</span>{/* eslint-disable-next-line @next/next/no-img-element */}<img src="/ekko-revestimentos-transparent.png" alt="Ekko Revestimentos" /></div>
         <div className="sidebar-user"><span className="user-avatar">{initials(user.name)}</span><div><strong>{user.name}</strong><small>{user.role}</small></div><button onClick={logout} aria-label="Sair">↗</button></div>
@@ -990,7 +1052,7 @@ export function EkkoApp() {
       </main>
       {newMaterial && <NewMaterial data={data} user={user} onClose={() => setNewMaterial(false)} onSaved={() => refreshData("Produto cadastrado com foto.")} />}
       {newUser && <NewUser currentUser={user} onClose={() => setNewUser(false)} onSaved={() => refreshData("Usuário criado com sucesso.")} />}
-      {accessUser && <EditUserAccess target={accessUser} currentUser={user} onClose={() => setAccessUser(null)} onSaved={() => refreshData("Acesso atualizado e registrado na auditoria.")} />}
+      {accessUser && <EditUserAccess target={accessUser} currentUser={user} onClose={() => setAccessUser(null)} onSaved={async (updated) => { await refreshData("Acesso atualizado e registrado na auditoria."); if (accessUser.id === user.id && updated) setUser((current) => current ? { ...current, ...updated } : current); }} />}
       {moveMaterial && <MoveMaterial material={moveMaterial} locations={data.locations} user={user} onClose={() => setMoveMaterial(null)} onSaved={() => refreshData("Movimentação registrada.")} />}
       {editMaterial && <EditMaterial material={data.materials.find((item) => item.id === editMaterial.id) || editMaterial} user={user} onClose={() => setEditMaterial(null)} onSaved={() => refreshData("Alterações salvas no histórico.")} />}
       {removeMaterial && <RemoveMaterial material={removeMaterial} user={user} onClose={() => setRemoveMaterial(null)} onSaved={() => refreshData("Produto removido e registrado no histórico.")} />}

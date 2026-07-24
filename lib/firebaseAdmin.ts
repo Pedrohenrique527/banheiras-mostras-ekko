@@ -8,6 +8,8 @@ type AppUser = {
   email: string;
   role: "Administrador" | "Gerente" | "Usuario" | "Usuário";
   active?: boolean | number;
+  is_owner?: boolean;
+  must_change_password?: boolean;
   created_at?: string;
 };
 
@@ -96,6 +98,7 @@ export async function ensureFirebaseSeed() {
       email_normalized: "admin@ekko.com.br",
       password_hash: await hashPassword("Ekko@2026"),
       role: "Administrador",
+      is_owner: true,
       active: true,
       created_at: now,
     });

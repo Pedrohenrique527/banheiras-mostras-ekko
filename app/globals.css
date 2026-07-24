@@ -85,6 +85,7 @@ img { display: block; }
 .login-company { align-items: center; border-top: 1px solid rgba(255,255,255,.09); display: flex; gap: 24px; margin-top: 42px; padding-top: 25px; position: relative; z-index: 1; }
 .login-company span { color: #76889a; font-size: 10px; letter-spacing: .13em; text-transform: uppercase; }
 .login-company img { height: 68px; object-fit: contain; opacity: 1; width: 205px; }
+.login-company img, .sidebar-company img { filter: brightness(0) invert(1) drop-shadow(0 2px 5px rgba(255,255,255,.2)); }
 .login-access { align-items: center; background: white; display: flex; flex-direction: column; justify-content: center; padding: 56px clamp(44px, 6vw, 88px) 28px; }
 .login-form { max-width: 420px; width: 100%; }
 .login-form h2 { font-size: 34px; letter-spacing: -.035em; margin: 14px 0 8px; }
@@ -107,9 +108,21 @@ input, select, textarea {
 input:focus, select:focus, textarea:focus { border-color: #7197e9; box-shadow: 0 0 0 3px rgba(47,105,223,.1); }
 .login-form input, .simple-form input, .simple-form select, .move-form textarea { display: block; height: 48px; margin-top: 8px; padding: 0 13px; width: 100%; }
 .login-form .wide { margin-top: 6px; }
+.password-field { align-items: center; display: flex; position: relative; }
+.password-field input { flex: 1; padding-right: 72px !important; }
+.password-field button { background: transparent; border: 0; color: var(--blue); font-size: 10px; font-weight: 800; padding: 8px; position: absolute; right: 5px; }
+.password-hint, .field-help { color: var(--muted); display: block; font-size: 10px; font-weight: 400; margin-top: 6px; }
 .login-access > footer { color: #9aa4ad; font-size: 10px; margin-top: auto; padding-top: 36px; }
 .form-error { background: #fff0f0; border: 1px solid #f0cccc; border-radius: 6px; color: #aa3535; font-size: 12px; padding: 11px 13px; }
 .mobile-identity { display: none; }
+.password-change-page { align-items: center; background: linear-gradient(140deg, #06111e, #0d2237); display: flex; justify-content: center; min-height: 100vh; padding: 24px; }
+.password-change-card { background: white; border-radius: 14px; box-shadow: 0 24px 70px rgba(0,0,0,.25); max-width: 430px; padding: 34px; width: 100%; }
+.password-change-card > img { filter: none; height: 74px; margin: 0 auto 24px; object-fit: contain; width: 210px; }
+.password-change-card h1 { font-size: 28px; letter-spacing: -.04em; margin: 12px 0 8px; }
+.password-change-card > p { color: var(--muted); font-size: 13px; line-height: 1.55; margin: 0 0 26px; }
+.password-change-card label { color: #435162; display: block; font-size: 12px; font-weight: 700; margin-bottom: 16px; }
+.password-change-card .password-field input { height: 48px; margin-top: 8px; padding-left: 13px; width: 100%; }
+.password-change-card small { color: var(--muted); display: block; font-size: 10px; margin-top: 18px; text-align: center; }
 @keyframes route { 0% { left: -60%; } 55%,100% { left: 110%; } }
 @keyframes pulse { 50% { box-shadow: 0 0 0 9px rgba(71,210,221,.05); opacity: .55; } }
 
@@ -131,9 +144,10 @@ input:focus, select:focus, textarea:focus { border-color: #7197e9; box-shadow: 0
 .sidebar nav i { align-items: center; border: 1px solid #355067; border-radius: 5px; display: flex; font-size: 12px; font-style: normal; height: 25px; justify-content: center; width: 25px; }
 .sidebar nav span { font-size: 12px; font-weight: 600; }
 .sidebar nav b { background: #24394d; border-radius: 12px; color: #a9bac8; font-size: 9px; margin-left: auto; padding: 3px 7px; }
+.sidebar nav b.nav-notification { background: #d76b45; color: white; }
 .sidebar-company { border-top: 1px solid rgba(255,255,255,.08); margin-top: auto; padding: 22px 10px 18px; }
 .sidebar-company span { color: #526477; display: block; font-size: 9px; letter-spacing: .15em; margin-bottom: 10px; text-transform: uppercase; }
-.sidebar-company img { height: 62px; object-fit: contain; object-position: left; opacity: 1; width: 168px; }
+.sidebar-company img { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.12); border-radius: 8px; height: 70px; object-fit: contain; object-position: center; opacity: 1; padding: 7px 10px; width: 190px; }
 .sidebar-user { align-items: center; border-top: 1px solid rgba(255,255,255,.08); display: flex; gap: 9px; padding: 18px 6px; }
 .user-avatar, .top-avatar { align-items: center; background: #223e58; border-radius: 50%; color: #bcecf0; display: flex; font-size: 10px; font-weight: 800; height: 34px; justify-content: center; width: 34px; }
 .sidebar-user div { display: flex; flex: 1; flex-direction: column; min-width: 0; }
@@ -209,6 +223,7 @@ button:hover .product-photo img { transform: scale(1.025); }
 .status.show { background: #edf2fe; color: #4167ba; }
 .status.warning { background: #fff3e2; color: var(--amber); }
 .status.danger { background: #fdecec; color: var(--red); }
+.status.removed { background: #f8e7e7; color: #8f3030; }
 .status.client { background: #f2edfb; color: #7954a8; }
 .status.neutral { background: #eef1f4; color: #6d7883; }
 .pending-note { align-items: center; background: #f8fafb; border-top: 1px solid var(--line); display: flex; gap: 12px; margin-top: 5px; padding: 16px 20px; }
