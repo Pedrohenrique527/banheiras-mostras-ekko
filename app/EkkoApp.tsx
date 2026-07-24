@@ -6,7 +6,7 @@ type User = {
   id: string;
   name: string;
   email: string;
-  role: "Administrador" | "Gerente" | "UsuÃ¡rio";
+  role: "Administrador" | "Gerente" | "Usuário";
   active?: number;
   created_at?: string;
   access_status?: string;
@@ -90,26 +90,26 @@ type SystemData = {
 
 const emptyData: SystemData = { materials: [], movements: [], auditLogs: [], users: [], locations: [], removedMaterials: [], messages: [], announcements: [] };
 const navItems: Array<{ key: NavKey; label: string; icon: string }> = [
-  { key: "overview", label: "Resumo", icon: "âŒ‚" },
-  { key: "materials", label: "Banheiras e amostras", icon: "â–¡" },
+  { key: "overview", label: "Resumo", icon: "⌂" },
+  { key: "materials", label: "Banheiras e amostras", icon: "□" },
   { key: "report", label: "Relatório de produtos", icon: "▤" },
-  { key: "history", label: "HistÃ³rico", icon: "â†”" },
+  { key: "history", label: "Histórico", icon: "↔" },
   { key: "chat", label: "Chat da equipe", icon: "â˜" },
-  { key: "users", label: "UsuÃ¡rios", icon: "â—Ž" },
+  { key: "users", label: "Usuários", icon: "◎" },
   { key: "about", label: "Sobre", icon: "i" },
 ];
 const titles: Record<NavKey, string> = {
-  overview: "Resumo da operaÃ§Ã£o",
+  overview: "Resumo da operação",
   materials: "Banheiras e amostras",
   report: "Relatório de produtos",
-  history: "MovimentaÃ§Ãµes e alteraÃ§Ãµes",
+  history: "Movimentações e alterações",
   chat: "Chat da equipe",
-  users: "UsuÃ¡rios",
+  users: "Usuários",
   about: "Sobre o sistema",
 };
 
 function formatDate(value?: string, withTime = false) {
-  if (!value) return "â€”";
+  if (!value) return "—";
   return new Intl.DateTimeFormat("pt-BR", {
     day: "2-digit",
     month: "short",
@@ -137,10 +137,10 @@ function Photo({ material, className = "" }: { material: Material; className?: s
 
 function Status({ value }: { value: string }) {
   const normalized = value.toLowerCase();
-  const tone = normalized.includes("disponÃ­vel") ? "available"
-    : normalized.includes("exposiÃ§Ã£o") ? "show"
-      : normalized.includes("manutenÃ§Ã£o") || normalized.includes("urgente") ? "warning"
-        : normalized.includes("nÃ£o localizado") ? "danger"
+  const tone = normalized.includes("disponível") ? "available"
+    : normalized.includes("exposição") ? "show"
+      : normalized.includes("manutenção") || normalized.includes("urgente") ? "warning"
+        : normalized.includes("não localizado") ? "danger"
           : normalized.includes("cliente") ? "client" : "neutral";
   return <span className={`status ${tone}`}><i />{value}</span>;
 }
@@ -173,10 +173,10 @@ function Login({ onLogin }: { onLogin: (user: User) => Promise<void> }) {
         body: JSON.stringify({ email, password }),
       });
       const result = await response.json() as User & { error?: string };
-      if (!response.ok) throw new Error(result.error || "NÃ£o foi possÃ­vel entrar.");
+      if (!response.ok) throw new Error(result.error || "Não foi possível entrar.");
       await onLogin(result);
     } catch (loginError) {
-      setError(loginError instanceof Error ? loginError.message : "NÃ£o foi possÃ­vel entrar.");
+      setError(loginError instanceof Error ? loginError.message : "Não foi possível entrar.");
     } finally {
       setLoading(false);
     }
@@ -188,22 +188,22 @@ function Login({ onLogin }: { onLogin: (user: User) => Promise<void> }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="pedro-logo" src="/pedro-mariniello-transparent.png" alt="Pedro Mariniello" />
         <div className="login-title">
-          <span>GESTÃƒO E RASTREABILIDADE</span>
+          <span>GESTÃO E RASTREABILIDADE</span>
           <h1>Sistema de<br />Banheiras e Amostras</h1>
-          <p>Uma visÃ£o simples de cada produto, onde ele estÃ¡ e quem fez a Ãºltima movimentaÃ§Ã£o.</p>
+          <p>Uma visão simples de cada produto, onde ele está e quem fez a última movimentação.</p>
         </div>
         <div className="route-animation" aria-hidden="true">
           <div><b>01</b><span>Cadastro</span></div>
           <i />
-          <div><b>02</b><span>LocalizaÃ§Ã£o</span></div>
+          <div><b>02</b><span>Localização</span></div>
           <i />
-          <div><b>03</b><span>HistÃ³rico</span></div>
+          <div><b>03</b><span>Histórico</span></div>
           <em />
         </div>
         <div className="login-company">
           <span>Sistema exclusivo para</span>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/ekko-revestimentos.png" alt="Ekko Revestimentos Especiais" />
+          <img src="/ekko-revestimentos-transparent.png" alt="Ekko Revestimentos Especiais" />
         </div>
       </section>
       <section className="login-access">
@@ -219,7 +219,7 @@ function Login({ onLogin }: { onLogin: (user: User) => Promise<void> }) {
           <label>E-mail<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="off" placeholder="Digite seu e-mail" required /></label>
           <label>Senha<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="off" placeholder="Digite sua senha" required /></label>
           {error && <div className="form-error">{error}</div>}
-          <button className="button primary wide" disabled={loading}>{loading ? "Entrando..." : "Entrar"}<span>â†’</span></button>
+          <button className="button primary wide" disabled={loading}>{loading ? "Entrando..." : "Entrar"}<span>→</span></button>
         </form>
         <footer>Software desenvolvido por Pedro Mariniello</footer>
       </section>
@@ -233,9 +233,9 @@ function Overview({ data, onOpen, onMove, onShowAll }: {
   onMove: (material: Material) => void;
   onShowAll: () => void;
 }) {
-  const atCd = data.materials.filter((item) => item.current_location === "CD IrajÃ¡").length;
-  const atShows = data.materials.filter((item) => item.status === "Em exposiÃ§Ã£o").length;
-  const attention = data.materials.filter((item) => ["NÃ£o localizado", "Em manutenÃ§Ã£o", "Entrega urgente"].includes(item.status));
+  const atCd = data.materials.filter((item) => item.current_location === "CD Irajá").length;
+  const atShows = data.materials.filter((item) => item.status === "Em exposição").length;
+  const attention = data.materials.filter((item) => ["Não localizado", "Em manutenção", "Entrega urgente"].includes(item.status));
 
   return (
     <div className="overview">
@@ -245,15 +245,15 @@ function Overview({ data, onOpen, onMove, onShowAll }: {
           <h2>Todos os produtos, sem perder o fio.</h2>
           <p>Cadastro simples, com os campos organizados a partir da planilha BANHEIRAS E MOSTRAS.</p>
         </div>
-        <button className="button light" onClick={onShowAll}>Ver todos os produtos <span>â†’</span></button>
+        <button className="button light" onClick={onShowAll}>Ver todos os produtos <span>→</span></button>
       </section>
 
       <section className="summary-row">
         {[
           ["Produtos cadastrados", data.materials.length, "base atual"],
-          ["No CD IrajÃ¡", atCd, "disponÃ­veis ou aguardando"],
-          ["Em mostras e lojas", atShows, "em exposiÃ§Ã£o"],
-          ["Precisam de atenÃ§Ã£o", attention.length, "pendÃªncias"],
+          ["No CD Irajá", atCd, "disponíveis ou aguardando"],
+          ["Em mostras e lojas", atShows, "em exposição"],
+          ["Precisam de atenção", attention.length, "pendências"],
         ].map(([label, value, detail]) => (
           <article className="summary-item" key={String(label)}>
             <span>{label}</span><strong>{String(value).padStart(2, "0")}</strong><small>{detail}</small>
@@ -263,7 +263,7 @@ function Overview({ data, onOpen, onMove, onShowAll }: {
 
       <div className="overview-columns">
         <section className="surface recent-products">
-          <header><div><span className="kicker">IDENTIFICAÃ‡ÃƒO VISUAL</span><h3>Produtos</h3></div><button className="link-button" onClick={onShowAll}>Abrir estoque</button></header>
+          <header><div><span className="kicker">IDENTIFICAÇÃO VISUAL</span><h3>Produtos</h3></div><button className="link-button" onClick={onShowAll}>Abrir estoque</button></header>
           {data.materials.length > 0 ? <div className="compact-product-grid">
             {data.materials.slice(0, 6).map((material) => (
               <button className="compact-product" key={material.id} onClick={() => onOpen(material)}>
@@ -271,11 +271,11 @@ function Overview({ data, onOpen, onMove, onShowAll }: {
                 <span><small>{material.code}</small><strong>{material.name}</strong><em>{material.current_location}</em></span>
               </button>
             ))}
-          </div> : <div className="dashboard-empty"><span>â–¡</span><strong>Nenhum produto cadastrado</strong><p>Use â€œNovo produtoâ€ para incluir a primeira banheira ou amostra com foto.</p></div>}
+          </div> : <div className="dashboard-empty"><span>□</span><strong>Nenhum produto cadastrado</strong><p>Use “Novo produtoâ€ para incluir a primeira banheira ou amostra com foto.</p></div>}
         </section>
 
         <section className="surface attention">
-          <header><div><span className="kicker">ACOMPANHAMENTO</span><h3>Requer atenÃ§Ã£o</h3></div><span className="number-pill">{attention.length}</span></header>
+          <header><div><span className="kicker">ACOMPANHAMENTO</span><h3>Requer atenção</h3></div><span className="number-pill">{attention.length}</span></header>
           <div className="attention-list">
             {attention.map((material) => (
               <div className="attention-item" key={material.id}>
@@ -285,12 +285,12 @@ function Overview({ data, onOpen, onMove, onShowAll }: {
               </div>
             ))}
           </div>
-        <div className="pending-note"><b>+</b><span><strong>Cadastre com a foto do produto</strong><small>A imagem fica visÃ­vel no estoque e na ficha de rastreabilidade.</small></span></div>
+        <div className="pending-note"><b>+</b><span><strong>Cadastre com a foto do produto</strong><small>A imagem fica visível no estoque e na ficha de rastreabilidade.</small></span></div>
         </section>
       </div>
 
       <section className="surface movement-preview">
-        <header><div><span className="kicker">RASTREABILIDADE</span><h3>Ãšltimas movimentaÃ§Ãµes</h3></div></header>
+        <header><div><span className="kicker">RASTREABILIDADE</span><h3>Últimas movimentações</h3></div></header>
         {data.movements.length > 0 ? <div className="movement-list">
           {data.movements.slice(0, 5).map((movement) => (
             <button key={movement.id} onClick={() => {
@@ -299,11 +299,11 @@ function Overview({ data, onOpen, onMove, onShowAll }: {
             }}>
               <span className="movement-avatar">{initials(movement.user_name)}</span>
               <span><strong>{movement.material_name}</strong><small>{movement.user_name}</small></span>
-              <span className="movement-route"><em>{movement.previous_location}</em><b>â†’</b><strong>{movement.new_location}</strong></span>
+              <span className="movement-route"><em>{movement.previous_location}</em><b>→</b><strong>{movement.new_location}</strong></span>
               <time>{formatDate(movement.moved_at, true)}</time>
             </button>
           ))}
-        </div> : <div className="dashboard-empty small"><span>â†”</span><strong>Ainda nÃ£o hÃ¡ movimentaÃ§Ãµes</strong><p>O histÃ³rico serÃ¡ criado automaticamente quando os produtos forem movimentados.</p></div>}
+        </div> : <div className="dashboard-empty small"><span>↔</span><strong>Ainda não há movimentações</strong><p>O histórico será criado automaticamente quando os produtos forem movimentados.</p></div>}
       </section>
     </div>
   );
@@ -330,12 +330,12 @@ function Materials({ data, onNew, onOpen, onMove }: {
   return (
     <section className="materials-page">
       <div className="materials-actions">
-        <div className="search-box"><span>âŒ•</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar nome, cÃ³digo ou marca" /></div>
+        <div className="search-box"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar nome, código ou marca" /></div>
         <select value={location} onChange={(event) => setLocation(event.target.value)}><option>Todos</option>{data.locations.map((item) => <option key={item.id}>{item.name}</option>)}</select>
         <select value={status} onChange={(event) => setStatus(event.target.value)}><option>Todos</option>{statuses.map((item) => <option key={item}>{item}</option>)}</select>
         <button className="button primary" onClick={onNew}>+ Cadastrar produto</button>
       </div>
-      <div className="results-line"><strong>{filtered.length}</strong> produtos encontrados <span>â€¢</span> VisualizaÃ§Ã£o com fotos</div>
+      <div className="results-line"><strong>{filtered.length}</strong> produtos encontrados <span>•</span> Visualização com fotos</div>
       <div className="product-grid">
         {filtered.map((material) => (
           <article className="product-card" key={material.id}>
@@ -343,11 +343,11 @@ function Materials({ data, onNew, onOpen, onMove }: {
             <div className="product-card-body">
               <div className="product-meta"><span>{material.code}</span><Status value={material.status} /></div>
               <button className="product-name" onClick={() => onOpen(material)}>{material.name}</button>
-              <p>{material.brand}{material.model ? ` Â· ${material.model}` : ""}</p>
-              <dl><div><dt>Local atual</dt><dd>{material.current_location}</dd></div><div><dt>Ãšltima alteraÃ§Ã£o</dt><dd>{formatDate(material.updated_at)}</dd></div></dl>
+              <p>{material.brand}{material.model ? ` · ${material.model}` : ""}</p>
+              <dl><div><dt>Local atual</dt><dd>{material.current_location}</dd></div><div><dt>Última alteração</dt><dd>{formatDate(material.updated_at)}</dd></div></dl>
               {material.source_ref && <small className="source-line">{material.source_ref}</small>}
             </div>
-            <footer><button onClick={() => onOpen(material)}>Ver ficha</button><button className="move-button" onClick={() => onMove(material)}>Movimentar â†’</button></footer>
+            <footer><button onClick={() => onOpen(material)}>Ver ficha</button><button className="move-button" onClick={() => onMove(material)}>Movimentar →</button></footer>
           </article>
         ))}
       </div>
@@ -386,6 +386,7 @@ function ProductReport({ data }: { data: SystemData }) {
     <section className="report-page">
       <div className="report-toolbar">
         <div><span className="kicker">VISÃO CONSOLIDADA</span><h2>Relatório de produtos</h2><p>Todos os produtos cadastrados, incluindo itens removidos do estoque.</p></div>
+        <div className="report-total"><strong>{allProducts.length}</strong><span>produtos no sistema</span></div>
         <div className="report-actions"><button className="button secondary" onClick={() => window.print()}>Imprimir / salvar PDF</button><button className="button primary" onClick={downloadCsv}>Baixar planilha CSV</button></div>
       </div>
       <div className="report-filters"><label>Status<select value={status} onChange={(event) => setStatus(event.target.value)}><option>Todos</option>{statuses.map((item) => <option key={item}>{item}</option>)}</select></label><label>Localização<select value={location} onChange={(event) => setLocation(event.target.value)}><option>Todos</option>{data.locations.map((item) => <option key={item.id}>{item.name}</option>)}</select></label><strong>{rows.length} produtos no relatório</strong></div>
@@ -400,37 +401,37 @@ function History({ data, onOpen }: { data: SystemData; onOpen: (material: Materi
   return (
     <section className="surface history-page">
       <header className="history-header">
-        <div className="tabs"><button className={tab === "movements" ? "active" : ""} onClick={() => setTab("movements")}>MovimentaÃ§Ãµes</button><button className={tab === "audit" ? "active" : ""} onClick={() => setTab("audit")}>AlteraÃ§Ãµes</button><button className={tab === "removed" ? "active" : ""} onClick={() => setTab("removed")}>Removidos ({data.removedMaterials.length})</button></div>
+        <div className="tabs"><button className={tab === "movements" ? "active" : ""} onClick={() => setTab("movements")}>Movimentações</button><button className={tab === "audit" ? "active" : ""} onClick={() => setTab("audit")}>Alterações</button><button className={tab === "removed" ? "active" : ""} onClick={() => setTab("removed")}>Removidos ({data.removedMaterials.length})</button></div>
         <span>Registros permanentes</span>
       </header>
       {tab === "movements" ? (
         <div className="history-table">
-          <div className="table-head"><span>Produto</span><span>Trajeto</span><span>ResponsÃ¡vel</span><span>Data</span></div>
+          <div className="table-head"><span>Produto</span><span>Trajeto</span><span>Responsável</span><span>Data</span></div>
           {data.movements.map((movement) => (
             <button className="table-row" key={movement.id} onClick={() => {
               const material = data.materials.find((item) => item.id === movement.material_id);
               if (material) onOpen(material);
             }}>
               <span><strong>{movement.material_name}</strong><small>{movement.material_code}</small></span>
-              <span><em>{movement.previous_location}</em><b>â†’</b><strong>{movement.new_location}</strong></span>
+              <span><em>{movement.previous_location}</em><b>→</b><strong>{movement.new_location}</strong></span>
               <span>{movement.user_name}</span><time>{formatDate(movement.moved_at, true)}</time>
             </button>
           ))}
         </div>
       ) : tab === "audit" ? (
         <div className="history-table audit-table">
-          <div className="table-head"><span>AÃ§Ã£o</span><span>Produto / campo</span><span>AlteraÃ§Ã£o</span><span>ResponsÃ¡vel / data</span></div>
+          <div className="table-head"><span>Ação</span><span>Produto / campo</span><span>Alteração</span><span>Responsável / data</span></div>
           {data.auditLogs.map((log) => (
             <div className="table-row" key={log.id}>
               <span><strong>{log.action}</strong></span>
-              <span><strong>{log.material_name || "Sistema"}</strong><small>{log.changed_field || "â€”"}</small></span>
-              <span><em>{log.previous_value || "â€”"}</em><b>â†’</b><strong>{log.new_value || "â€”"}</strong></span>
+              <span><strong>{log.material_name || "Sistema"}</strong><small>{log.changed_field || "—"}</small></span>
+              <span><em>{log.previous_value || "—"}</em><b>→</b><strong>{log.new_value || "—"}</strong></span>
               <span>{log.user_name}<small>{formatDate(log.created_at, true)}</small></span>
             </div>
           ))}
         </div>
       ) : (
-        <div className="history-table audit-table"><div className="table-head"><span>Produto removido</span><span>Onde</span><span>Motivo</span><span>Quem / quando</span></div>{data.removedMaterials.length === 0 ? <div className="history-empty">Nenhum produto foi removido.</div> : data.removedMaterials.map((material) => <div className="table-row" key={material.id}><span><strong>{material.name}</strong><small>{material.code}</small></span><span><strong>{material.removal_location || "â€”"}</strong></span><span><strong>{material.removal_reason || "â€”"}</strong></span><span>{material.removed_by || "â€”"}<small>{formatDate(material.removed_at, true)}</small></span></div>)}</div>
+        <div className="history-table audit-table"><div className="table-head"><span>Produto removido</span><span>Onde</span><span>Motivo</span><span>Quem / quando</span></div>{data.removedMaterials.length === 0 ? <div className="history-empty">Nenhum produto foi removido.</div> : data.removedMaterials.map((material) => <div className="table-row" key={material.id}><span><strong>{material.name}</strong><small>{material.code}</small></span><span><strong>{material.removal_location || "—"}</strong></span><span><strong>{material.removal_reason || "—"}</strong></span><span>{material.removed_by || "—"}<small>{formatDate(material.removed_at, true)}</small></span></div>)}</div>
       )}
     </section>
   );
@@ -444,6 +445,22 @@ function TeamChat({ data, user, onSaved }: { data: SystemData; user: User; onSav
   const [error, setError] = useState("");
   const canAnnounce = user.role === "Administrador" || user.role === "Gerente";
 
+  async function removeAnnouncement(announcementId: string) {
+    if (!window.confirm("Remover este aviso para toda a equipe?")) return;
+    setPublishing(true);
+    setError("");
+    try {
+      const response = await fetch("/api/system", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "removeAnnouncement", announcementId }) });
+      const result = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(result.error || "Não foi possível remover o aviso.");
+      await onSaved("Aviso removido e registrado na auditoria.");
+    } catch (removeError) {
+      setError(removeError instanceof Error ? removeError.message : "Não foi possível remover o aviso.");
+    } finally {
+      setPublishing(false);
+    }
+  }
+
   async function post(action: "createChatMessage" | "createAnnouncement") {
     setPublishing(true);
     setError("");
@@ -453,11 +470,11 @@ function TeamChat({ data, user, onSaved }: { data: SystemData; user: User; onSav
         : { action, userId: user.id, title, message: notice, pinned: true };
       const response = await fetch("/api/system", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const result = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(result.error || "NÃ£o foi possÃ­vel enviar.");
+      if (!response.ok) throw new Error(result.error || "Não foi possível enviar.");
       if (action === "createChatMessage") setMessage(""); else { setTitle(""); setNotice(""); }
       await onSaved(action === "createChatMessage" ? "Mensagem enviada." : "Aviso publicado para toda a equipe.");
     } catch (postError) {
-      setError(postError instanceof Error ? postError.message : "NÃ£o foi possÃ­vel enviar.");
+      setError(postError instanceof Error ? postError.message : "Não foi possível enviar.");
     } finally {
       setPublishing(false);
     }
@@ -466,17 +483,17 @@ function TeamChat({ data, user, onSaved }: { data: SystemData; user: User; onSav
   return (
     <section className="chat-layout">
       <div className="surface chat-panel">
-        <header><div><span className="kicker">COMUNICAÃ‡ÃƒO INTERNA</span><h3>Conversa da equipe</h3></div><span className="chat-count">{data.messages.length} mensagens</span></header>
+        <header><div><span className="kicker">COMUNICAÇÃO INTERNA</span><h3>Conversa da equipe</h3></div><span className="chat-count">{data.messages.length} mensagens</span></header>
         <div className="chat-stream">
-          {data.messages.length === 0 && <div className="chat-empty"><span>â˜</span><strong>Comece a conversa</strong><p>As mensagens enviadas aqui ficam disponÃ­veis para toda a equipe.</p></div>}
+          {data.messages.length === 0 && <div className="chat-empty"><span>â˜</span><strong>Comece a conversa</strong><p>As mensagens enviadas aqui ficam disponíveis para toda a equipe.</p></div>}
           {data.messages.map((item) => <article className={`chat-message ${item.user_id === user.id ? "mine" : ""}`} key={item.id}><span className="message-avatar">{initials(item.user_name)}</span><div><header><strong>{item.user_name}</strong><time>{formatDate(item.created_at, true)}</time></header><p>{item.message}</p></div></article>)}
         </div>
         <div className="chat-compose"><textarea value={message} onChange={(event) => setMessage(event.target.value)} maxLength={1500} placeholder="Escreva uma mensagem para a equipe..." rows={3} /><button className="button primary" disabled={publishing || !message.trim()} onClick={() => post("createChatMessage")}>{publishing ? "Enviando..." : "Enviar mensagem"}</button></div>
         {error && <div className="form-error chat-error">{error}</div>}
       </div>
       <aside className="chat-sidebar">
-        <section className="surface notice-list"><header><div><span className="kicker">MURAL</span><h3>Avisos gerais</h3></div></header>{data.announcements.length === 0 ? <p className="notice-empty">Nenhum aviso publicado.</p> : data.announcements.map((item) => <article key={item.id}><span>AVISO</span><strong>{item.title}</strong><p>{item.message}</p><small>{item.user_name} Â· {formatDate(item.created_at, true)}</small></article>)}</section>
-        {canAnnounce && <section className="surface announcement-compose"><span className="kicker">PUBLICAR PARA TODOS</span><input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="TÃ­tulo do aviso" /><textarea value={notice} onChange={(event) => setNotice(event.target.value)} placeholder="Mensagem que todos verÃ£o ao entrar" rows={4} /><button className="button secondary wide" disabled={publishing || !title.trim() || !notice.trim()} onClick={() => post("createAnnouncement")}>Publicar aviso <span>â†’</span></button></section>}
+        <section className="surface notice-list"><header><div><span className="kicker">MURAL</span><h3>Avisos gerais</h3></div></header>{data.announcements.length === 0 ? <p className="notice-empty">Nenhum aviso publicado.</p> : data.announcements.map((item) => <article key={item.id}><span>AVISO</span><strong>{item.title}</strong><p>{item.message}</p><div className="notice-meta"><small>{item.user_name} · {formatDate(item.created_at, true)}</small>{item.user_id === user.id && <button className="notice-remove" disabled={publishing} onClick={() => removeAnnouncement(item.id)}>Remover aviso</button>}</div></article>)}</section>
+        {canAnnounce && <section className="surface announcement-compose"><span className="kicker">PUBLICAR PARA TODOS</span><input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Título do aviso" /><textarea value={notice} onChange={(event) => setNotice(event.target.value)} placeholder="Mensagem que todos verão ao entrar" rows={4} /><button className="button secondary wide" disabled={publishing || !title.trim() || !notice.trim()} onClick={() => post("createAnnouncement")}>Publicar aviso <span>→</span></button></section>}
       </aside>
     </section>
   );
@@ -490,8 +507,8 @@ function Users({ data, user, onNew, onEdit }: { data: SystemData; user: User; on
   const owner = isOwnerUser(user);
   return (
     <section className="surface users-page">
-      <header><div><span className="kicker">CONTROLE DE ACESSO</span><h3>Equipe cadastrada</h3><p className="users-help">Somente o proprietÃ¡rio do sistema pode criar acessos, alterar permissÃµes e remover contas.</p></div>{owner && <button className="button primary" onClick={onNew}>+ Novo usuÃ¡rio</button>}</header>
-      {!owner && <div className="permission-note">A criaÃ§Ã£o de logins, alteraÃ§Ã£o de permissÃµes e remoÃ§Ã£o de contas Ã© feita somente pelo proprietÃ¡rio.</div>}
+      <header><div><span className="kicker">CONTROLE DE ACESSO</span><h3>Equipe cadastrada</h3><p className="users-help">Somente o proprietário do sistema pode criar acessos, alterar permissões e remover contas.</p></div>{owner && <button className="button primary" onClick={onNew}>+ Novo usuário</button>}</header>
+      {!owner && <div className="permission-note">A criação de logins, alteração de permissões e remoção de contas é feita somente pelo proprietário.</div>}
       <div className="user-list">
         {data.users.map((item) => (
           <div className={`user-row ${!item.active ? "blocked" : ""}`} key={item.id}><span className="user-avatar">{initials(item.name)}</span><div><strong>{item.name}</strong><small>{item.email}</small>{item.access_reason && <small>Motivo: {item.access_reason}</small>}</div><span className="role">{item.role}</span><span className={item.active ? "active-user" : "blocked-user"}><i />{item.active ? "Ativo" : "Bloqueado"}</span>{owner && <button className="link-button user-action" onClick={() => onEdit(item)}>{item.active ? "Editar / remover" : "Reativar"}</button>}</div>
@@ -506,11 +523,11 @@ function About() {
     <section className="about-page">
       <div className="about-card">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="about-ekko" src="/ekko-revestimentos.png" alt="Ekko Revestimentos Especiais" />
+        <img className="about-ekko" src="/ekko-revestimentos-transparent.png" alt="Ekko Revestimentos Especiais" />
         <span className="kicker">SISTEMA CORPORATIVO</span>
         <h2>Sistema de Banheiras e Amostras</h2>
-        <p>GestÃ£o visual e rastreabilidade de produtos, mostras, lojas e emprÃ©stimos da Ekko Revestimentos.</p>
-        <dl><div><dt>VersÃ£o</dt><dd>2.0.0</dd></div><div><dt>Estrutura baseada em</dt><dd>BANHEIRAS E MOSTRAS.xlsx</dd></div></dl>
+        <p>Gestão visual e rastreabilidade de produtos, mostras, lojas e empréstimos da Ekko Revestimentos.</p>
+        <dl><div><dt>Versão</dt><dd>2.0.0</dd></div><div><dt>Estrutura baseada em</dt><dd>BANHEIRAS E MOSTRAS.xlsx</dd></div></dl>
         <div className="about-signature"><span>Software desenvolvido por</span>{/* eslint-disable-next-line @next/next/no-img-element */}<img src="/pedro-mariniello-transparent.png" alt="Pedro Mariniello" /></div>
       </div>
     </section>
@@ -527,7 +544,7 @@ function Modal({ title, subtitle, onClose, children, large = false }: {
   return (
     <div className="modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
       <section className={`modal ${large ? "large" : ""}`} role="dialog" aria-modal="true" aria-label={title}>
-        <header><div><span className="kicker">{subtitle}</span><h2>{title}</h2></div><button onClick={onClose} aria-label="Fechar">Ã—</button></header>
+        <header><div><span className="kicker">{subtitle}</span><h2>{title}</h2></div><button onClick={onClose} aria-label="Fechar">×</button></header>
         {children}
       </section>
     </div>
@@ -566,7 +583,7 @@ function NewMaterial({ data, user, onClose, onSaved }: {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!photoUrl) {
-      setError("A foto Ã© obrigatÃ³ria. Ela ajuda a equipe a identificar o produto.");
+      setError("A foto é obrigatória. Ela ajuda a equipe a identificar o produto.");
       return;
     }
     setSaving(true);
@@ -579,11 +596,11 @@ function NewMaterial({ data, user, onClose, onSaved }: {
         body: JSON.stringify({ action: "createMaterial", userId: user.id, material: { ...material, photo_url: photoUrl } }),
       });
       const result = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(result.error || "NÃ£o foi possÃ­vel cadastrar.");
+      if (!response.ok) throw new Error(result.error || "Não foi possível cadastrar.");
       await onSaved();
       onClose();
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "NÃ£o foi possÃ­vel cadastrar.");
+      setError(saveError instanceof Error ? saveError.message : "Não foi possível cadastrar.");
     } finally {
       setSaving(false);
     }
@@ -593,34 +610,34 @@ function NewMaterial({ data, user, onClose, onSaved }: {
     <Modal title="Cadastrar produto" subtitle="NOVO REGISTRO" onClose={onClose} large>
       <form className="material-form" onSubmit={submit}>
         <section className="photo-step">
-          <div><span className="step-number">1</span><div><strong>Foto do produto</strong><p>ObrigatÃ³ria para facilitar a identificaÃ§Ã£o pela equipe.</p></div></div>
+          <div><span className="step-number">1</span><div><strong>Foto do produto</strong><p>Obrigatória para facilitar a identificação pela equipe.</p></div></div>
           <label className={`upload-area ${photoUrl ? "has-image" : ""}`}>
             <input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => upload(event.target.files?.[0])} />
             {photoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={photoUrl} alt="PrÃ©via do produto" />
-            ) : <span><b>{uploading ? "Enviando imagem..." : "+ Selecionar foto"}</b><small>JPG, PNG ou WEBP Â· atÃ© 5 MB</small></span>}
+              <img src={photoUrl} alt="Prévia do produto" />
+            ) : <span><b>{uploading ? "Enviando imagem..." : "+ Selecionar foto"}</b><small>JPG, PNG ou WEBP · até 5 MB</small></span>}
           </label>
         </section>
         <section className="form-step">
-          <div className="step-title"><span className="step-number">2</span><div><strong>InformaÃ§Ãµes do produto</strong><p>Campos baseados na planilha atual.</p></div></div>
+          <div className="step-title"><span className="step-number">2</span><div><strong>Informações do produto</strong><p>Campos baseados na planilha atual.</p></div></div>
           <div className="form-fields">
             <label className="span-2">Nome do produto<input name="name" required placeholder="Ex.: Banheira Soho 170 Texture White" /></label>
-            <label>CÃ³digo<input name="code" required placeholder="Ex.: DK5106WH" /></label>
-            <label>Categoria<select name="category" defaultValue="Banheira"><option>Banheira</option><option>Amostra</option><option>Material de exposiÃ§Ã£o</option><option>Outro</option></select></label>
+            <label>Código<input name="code" required placeholder="Ex.: DK5106WH" /></label>
+            <label>Categoria<select name="category" defaultValue="Banheira"><option>Banheira</option><option>Amostra</option><option>Material de exposição</option><option>Outro</option></select></label>
             <label>Marca<input name="brand" placeholder="Ex.: Doka" /></label>
             <label>Modelo<input name="model" placeholder="Ex.: Soho 170" /></label>
             <label>Cor / acabamento<input name="color" placeholder="Ex.: Texture White" /></label>
-            <label>DimensÃµes<input name="dimensions" placeholder="Opcional" /></label>
-            <label>Local atual<select name="current_location" defaultValue="CD IrajÃ¡">{data.locations.map((item) => <option key={item.id}>{item.name}</option>)}</select></label>
-            <label>Status<select name="status" defaultValue="DisponÃ­vel"><option>DisponÃ­vel</option><option>Em exposiÃ§Ã£o</option><option>Em cliente</option><option>Em manutenÃ§Ã£o</option><option>Entrega urgente</option><option>NÃ£o localizado</option><option>Retirado</option></select></label>
-            <label className="span-2">Pedido, mostra ou referÃªncia<input name="source_ref" placeholder="Ex.: Pedido 7231.2026 â€” Tiago Castello Banco" /></label>
+            <label>Dimensões<input name="dimensions" placeholder="Opcional" /></label>
+            <label>Local atual<select name="current_location" defaultValue="CD Irajá">{data.locations.map((item) => <option key={item.id}>{item.name}</option>)}</select></label>
+            <label>Status<select name="status" defaultValue="Disponível"><option>Disponível</option><option>Em exposição</option><option>Em cliente</option><option>Em manutenção</option><option>Entrega urgente</option><option>Não localizado</option><option>Retirado</option></select></label>
+            <label className="span-2">Pedido, mostra ou referência<input name="source_ref" placeholder="Ex.: Pedido 7231.2026 — Tiago Castello Banco" /></label>
             <label>Data de entrada<input name="entry_date" type="date" defaultValue="2026-07-23" /></label>
-            <label>NÃºmero da nota fiscal<input name="invoice_number" placeholder="Ex.: NF 12876" /></label>
+            <label>Número da nota fiscal<input name="invoice_number" placeholder="Ex.: NF 12876" /></label>
             <label>Data da nota fiscal<input name="invoice_date" type="date" /></label>
             <label className="span-2">Link da nota fiscal<input name="invoice_link" type="url" placeholder="Cole aqui um link, se existir" /></label>
-            <label className="span-2">ObservaÃ§Ã£o da nota fiscal<textarea name="invoice_note" rows={2} placeholder="Ex.: nota enviada pelo fornecedor, aguardando XML, sem nota no momento." /></label>
-            <label className="span-2">ObservaÃ§Ãµes<textarea name="description" rows={3} placeholder="Estado do produto, prazo da mostra ou informaÃ§Ã£o importante." /></label>
+            <label className="span-2">Observação da nota fiscal<textarea name="invoice_note" rows={2} placeholder="Ex.: nota enviada pelo fornecedor, aguardando XML, sem nota no momento." /></label>
+            <label className="span-2">Observações<textarea name="description" rows={3} placeholder="Estado do produto, prazo da mostra ou informação importante." /></label>
           </div>
         </section>
         {error && <div className="form-error">{error}</div>}
@@ -652,30 +669,30 @@ function EditMaterial({ material, user, onClose, onSaved }: { material: Material
     try {
       const response = await fetch("/api/system", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "updateMaterial", userId: user.id, materialId: material.id, material: { ...values, photo_url: photoUrl } }) });
       const result = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(result.error || "NÃ£o foi possÃ­vel salvar as alteraÃ§Ãµes.");
+      if (!response.ok) throw new Error(result.error || "Não foi possível salvar as alterações.");
       await onSaved(); onClose();
-    } catch (saveError) { setError(saveError instanceof Error ? saveError.message : "NÃ£o foi possÃ­vel salvar as alteraÃ§Ãµes."); } finally { setSaving(false); }
+    } catch (saveError) { setError(saveError instanceof Error ? saveError.message : "Não foi possível salvar as alterações."); } finally { setSaving(false); }
   }
   return (
-    <Modal title="Editar produto" subtitle="ALTERAÃ‡Ã•ES AUDITADAS" onClose={onClose} large>
+    <Modal title="Editar produto" subtitle="ALTERAÇÕES AUDITADAS" onClose={onClose} large>
       <form className="material-form edit-material-form" onSubmit={submit}>
-        <section className="photo-step"><div><span className="step-number">1</span><div><strong>Foto do produto</strong><p>Troque a foto quando necessÃ¡rio.</p></div></div><label className="upload-area has-image"><input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => upload(event.target.files?.[0])} />{/* eslint-disable-next-line @next/next/no-img-element */}<img src={photoUrl} alt="PrÃ©via atual" /></label></section>
-        <section className="form-step"><div className="step-title"><span className="step-number">2</span><div><strong>Dados cadastrados</strong><p>LocalizaÃ§Ã£o deve ser alterada pelo botÃ£o de movimentaÃ§Ã£o.</p></div></div><div className="form-fields">
+        <section className="photo-step"><div><span className="step-number">1</span><div><strong>Foto do produto</strong><p>Troque a foto quando necessário.</p></div></div><label className="upload-area has-image"><input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => upload(event.target.files?.[0])} />{/* eslint-disable-next-line @next/next/no-img-element */}<img src={photoUrl} alt="Prévia atual" /></label></section>
+        <section className="form-step"><div className="step-title"><span className="step-number">2</span><div><strong>Dados cadastrados</strong><p>Localização deve ser alterada pelo botão de movimentação.</p></div></div><div className="form-fields">
           <label className="span-2">Nome do produto<input name="name" defaultValue={material.name} required /></label>
-          <label>CÃ³digo<input name="code" defaultValue={material.code} required /></label>
-          <label>Categoria<select name="category" defaultValue={material.category}><option>Banheira</option><option>Amostra</option><option>Material de exposiÃ§Ã£o</option><option>Outro</option></select></label>
+          <label>Código<input name="code" defaultValue={material.code} required /></label>
+          <label>Categoria<select name="category" defaultValue={material.category}><option>Banheira</option><option>Amostra</option><option>Material de exposição</option><option>Outro</option></select></label>
           <label>Marca<input name="brand" defaultValue={material.brand || ""} /></label><label>Modelo<input name="model" defaultValue={material.model || ""} /></label>
-          <label>Cor / acabamento<input name="color" defaultValue={material.color || ""} /></label><label>DimensÃµes<input name="dimensions" defaultValue={material.dimensions || ""} /></label>
-          <label className="span-2">Pedido, mostra ou referÃªncia<input name="source_ref" defaultValue={material.source_ref || ""} /></label>
+          <label>Cor / acabamento<input name="color" defaultValue={material.color || ""} /></label><label>Dimensões<input name="dimensions" defaultValue={material.dimensions || ""} /></label>
+          <label className="span-2">Pedido, mostra ou referência<input name="source_ref" defaultValue={material.source_ref || ""} /></label>
           <label>Data de entrada<input name="entry_date" type="date" defaultValue={material.entry_date} /></label>
-          <label>NÃºmero da nota fiscal<input name="invoice_number" defaultValue={material.invoice_number || ""} /></label>
+          <label>Número da nota fiscal<input name="invoice_number" defaultValue={material.invoice_number || ""} /></label>
           <label>Data da nota fiscal<input name="invoice_date" type="date" defaultValue={material.invoice_date || ""} /></label>
           <label className="span-2">Link da nota fiscal<input name="invoice_link" type="url" defaultValue={material.invoice_link || ""} /></label>
-          <label className="span-2">ObservaÃ§Ã£o da nota fiscal<textarea name="invoice_note" rows={2} defaultValue={material.invoice_note || ""} /></label>
-          <label className="span-2">ObservaÃ§Ãµes<textarea name="description" rows={3} defaultValue={material.description || ""} /></label>
+          <label className="span-2">Observação da nota fiscal<textarea name="invoice_note" rows={2} defaultValue={material.invoice_note || ""} /></label>
+          <label className="span-2">Observações<textarea name="description" rows={3} defaultValue={material.description || ""} /></label>
         </div></section>
         {error && <div className="form-error">{error}</div>}
-        <footer className="form-footer"><span>Todas as alteraÃ§Ãµes ficam salvas no histÃ³rico.</span><button type="button" className="button secondary" onClick={onClose}>Cancelar</button><button className="button primary" disabled={saving || uploading}>{saving ? "Salvando..." : "Salvar alteraÃ§Ãµes"}</button></footer>
+        <footer className="form-footer"><span>Todas as alterações ficam salvas no histórico.</span><button type="button" className="button secondary" onClick={onClose}>Cancelar</button><button className="button primary" disabled={saving || uploading}>{saving ? "Salvando..." : "Salvar alterações"}</button></footer>
       </form>
     </Modal>
   );
@@ -691,11 +708,11 @@ function RemoveMaterial({ material, user, onClose, onSaved }: { material: Materi
     try {
       const response = await fetch("/api/system", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "removeMaterial", userId: user.id, materialId: material.id, removalLocation, reason }) });
       const result = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(result.error || "NÃ£o foi possÃ­vel remover o produto.");
+      if (!response.ok) throw new Error(result.error || "Não foi possível remover o produto.");
       await onSaved(); onClose();
-    } catch (removeError) { setError(removeError instanceof Error ? removeError.message : "NÃ£o foi possÃ­vel remover o produto."); } finally { setSaving(false); }
+    } catch (removeError) { setError(removeError instanceof Error ? removeError.message : "Não foi possível remover o produto."); } finally { setSaving(false); }
   }
-  return <Modal title="Remover produto" subtitle="REGISTRO PERMANENTE" onClose={onClose}><form className="simple-form remove-form" onSubmit={submit}><div className="remove-warning"><strong>{material.name}</strong><p>O produto sai do estoque, mas permanece para sempre no histÃ³rico com todos os dados da retirada.</p></div><label>Onde o produto estava ao ser removido<input value={removalLocation} onChange={(event) => setRemovalLocation(event.target.value)} required /></label><label>Por que o produto foi removido<textarea value={reason} onChange={(event) => setReason(event.target.value)} rows={4} required placeholder="Ex.: avaria, descarte, venda, devoluÃ§Ã£o..." /></label><div className="record-note"><strong>SerÃ¡ registrado</strong><p>Quem removeu: {user.name}<br />Quando: {formatDate(new Date().toISOString(), true)}<br />Onde e motivo informados acima.</p></div>{error && <div className="form-error">{error}</div>}<footer className="form-footer"><span /><button type="button" className="button secondary" onClick={onClose}>Cancelar</button><button className="button danger" disabled={saving}>{saving ? "Removendo..." : "Confirmar remoÃ§Ã£o"}</button></footer></form></Modal>;
+  return <Modal title="Remover produto" subtitle="REGISTRO PERMANENTE" onClose={onClose}><form className="simple-form remove-form" onSubmit={submit}><div className="remove-warning"><strong>{material.name}</strong><p>O produto sai do estoque, mas permanece para sempre no histórico com todos os dados da retirada.</p></div><label>Onde o produto estava ao ser removido<input value={removalLocation} onChange={(event) => setRemovalLocation(event.target.value)} required /></label><label>Por que o produto foi removido<textarea value={reason} onChange={(event) => setReason(event.target.value)} rows={4} required placeholder="Ex.: avaria, descarte, venda, devolução..." /></label><div className="record-note"><strong>Será registrado</strong><p>Quem removeu: {user.name}<br />Quando: {formatDate(new Date().toISOString(), true)}<br />Onde e motivo informados acima.</p></div>{error && <div className="form-error">{error}</div>}<footer className="form-footer"><span /><button type="button" className="button secondary" onClick={onClose}>Cancelar</button><button className="button danger" disabled={saving}>{saving ? "Removendo..." : "Confirmar remoção"}</button></footer></form></Modal>;
 }
 
 function MoveMaterial({ material, locations, user, onClose, onSaved }: {
@@ -720,11 +737,11 @@ function MoveMaterial({ material, locations, user, onClose, onSaved }: {
         body: JSON.stringify({ action: "moveMaterial", materialId: material.id, newLocation, note, userId: user.id }),
       });
       const result = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(result.error || "NÃ£o foi possÃ­vel movimentar.");
+      if (!response.ok) throw new Error(result.error || "Não foi possível movimentar.");
       await onSaved();
       onClose();
     } catch (moveError) {
-      setError(moveError instanceof Error ? moveError.message : "NÃ£o foi possÃ­vel movimentar.");
+      setError(moveError instanceof Error ? moveError.message : "Não foi possível movimentar.");
     } finally {
       setSaving(false);
     }
@@ -733,11 +750,11 @@ function MoveMaterial({ material, locations, user, onClose, onSaved }: {
     <Modal title="Movimentar produto" subtitle="NOVO DESTINO" onClose={onClose}>
       <form className="move-form" onSubmit={submit}>
         <div className="move-product"><Photo material={material} /><div><small>{material.code}</small><strong>{material.name}</strong><Status value={material.status} /></div></div>
-        <div className="route-form"><div><span>LOCAL ATUAL</span><strong>{material.current_location}</strong></div><b>â†’</b><label>NOVO LOCAL<select required value={newLocation} onChange={(event) => setNewLocation(event.target.value)}><option value="">Selecione</option>{locations.filter((item) => item.name !== material.current_location).map((item) => <option key={item.id}>{item.name}</option>)}</select></label></div>
-        <label>ObservaÃ§Ã£o<textarea value={note} onChange={(event) => setNote(event.target.value)} rows={3} placeholder="Motivo ou informaÃ§Ã£o importante sobre a movimentaÃ§Ã£o." /></label>
-        <div className="record-note"><strong>Registro permanente</strong><p>A movimentaÃ§Ã£o ficarÃ¡ vinculada a {user.name} e nÃ£o poderÃ¡ ser apagada.</p></div>
+        <div className="route-form"><div><span>LOCAL ATUAL</span><strong>{material.current_location}</strong></div><b>→</b><label>NOVO LOCAL<select required value={newLocation} onChange={(event) => setNewLocation(event.target.value)}><option value="">Selecione</option>{locations.filter((item) => item.name !== material.current_location).map((item) => <option key={item.id}>{item.name}</option>)}</select></label></div>
+        <label>Observação<textarea value={note} onChange={(event) => setNote(event.target.value)} rows={3} placeholder="Motivo ou informação importante sobre a movimentação." /></label>
+        <div className="record-note"><strong>Registro permanente</strong><p>A movimentação ficará vinculada a {user.name} e não poderá ser apagada.</p></div>
         {error && <div className="form-error">{error}</div>}
-        <footer className="form-footer"><span>{formatDate(new Date().toISOString(), true)}</span><button type="button" className="button secondary" onClick={onClose}>Cancelar</button><button className="button primary" disabled={saving}>{saving ? "Registrando..." : "Confirmar movimentaÃ§Ã£o"}</button></footer>
+        <footer className="form-footer"><span>{formatDate(new Date().toISOString(), true)}</span><button type="button" className="button secondary" onClick={onClose}>Cancelar</button><button className="button primary" disabled={saving}>{saving ? "Registrando..." : "Confirmar movimentação"}</button></footer>
       </form>
     </Modal>
   );
@@ -756,23 +773,23 @@ function NewUser({ currentUser, onClose, onSaved }: { currentUser: User; onClose
         body: JSON.stringify({ action: "createUser", userId: currentUser.id, user }),
       });
       const result = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(result.error || "NÃ£o foi possÃ­vel criar o usuÃ¡rio.");
+      if (!response.ok) throw new Error(result.error || "Não foi possível criar o usuário.");
       await onSaved();
       onClose();
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "NÃ£o foi possÃ­vel criar o usuÃ¡rio.");
+      setError(saveError instanceof Error ? saveError.message : "Não foi possível criar o usuário.");
     } finally {
       setSaving(false);
     }
   }
   return (
-    <Modal title="Novo usuÃ¡rio" subtitle="CONTROLE DE ACESSO" onClose={onClose}>
+    <Modal title="Novo usuário" subtitle="CONTROLE DE ACESSO" onClose={onClose}>
       <form className="simple-form" onSubmit={submit}>
         <label>Nome completo<input name="name" required /></label><label>E-mail<input name="email" type="email" required /></label>
-        <label>Perfil<select name="role"><option>Administrador</option><option>Gerente</option><option>UsuÃ¡rio</option></select></label>
+        <label>Perfil<select name="role"><option>Administrador</option><option>Gerente</option><option>Usuário</option></select></label>
         <label>Senha inicial<input name="password" type="password" minLength={8} required /></label>
         {error && <div className="form-error">{error}</div>}
-        <footer className="form-footer"><span /><button type="button" className="button secondary" onClick={onClose}>Cancelar</button><button className="button primary" disabled={saving}>{saving ? "Criando..." : "Criar usuÃ¡rio"}</button></footer>
+        <footer className="form-footer"><span /><button type="button" className="button secondary" onClick={onClose}>Cancelar</button><button className="button primary" disabled={saving}>{saving ? "Criando..." : "Criar usuário"}</button></footer>
       </form>
     </Modal>
   );
@@ -797,26 +814,26 @@ function EditUserAccess({ target, currentUser, onClose, onSaved }: { target: Use
         body: JSON.stringify({ action: "updateUserAccess", targetUserId: target.id, access: { role, active, reason } }),
       });
       const result = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(result.error || "NÃ£o foi possÃ­vel alterar este acesso.");
+      if (!response.ok) throw new Error(result.error || "Não foi possível alterar este acesso.");
       await onSaved();
       onClose();
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "NÃ£o foi possÃ­vel alterar este acesso.");
+      setError(saveError instanceof Error ? saveError.message : "Não foi possível alterar este acesso.");
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <Modal title="Editar acesso" subtitle="PERMISSÃ•ES DO SISTEMA" onClose={onClose}>
+    <Modal title="Editar acesso" subtitle="PERMISSÕES DO SISTEMA" onClose={onClose}>
       <form className="simple-form" onSubmit={submit}>
         <div className="access-target"><span className="user-avatar">{initials(target.name)}</span><div><strong>{target.name}</strong><small>{target.email}</small></div></div>
-        <label>Perfil<select value={role} onChange={(event) => setRole(event.target.value as User["role"])}><option>Administrador</option><option>Gerente</option><option>UsuÃ¡rio</option></select></label>
+        <label>Perfil<select value={role} onChange={(event) => setRole(event.target.value as User["role"])}><option>Administrador</option><option>Gerente</option><option>Usuário</option></select></label>
         <label className="check-line"><input type="checkbox" checked={active} disabled={isSelf} onChange={(event) => setActive(event.target.checked)} /><span>Acesso ativo</span></label>
-        <label>Motivo da remoÃ§Ã£o ou alteraÃ§Ã£o<textarea value={reason} onChange={(event) => setReason(event.target.value)} rows={3} placeholder="Ex.: colaborador saiu, acesso temporÃ¡rio finalizado, mudanÃ§a de funÃ§Ã£o..." /></label>
-        {isSelf && <div className="permission-note compact">VocÃª nÃ£o pode remover o prÃ³prio acesso principal.</div>}
+        <label>Motivo da remoção ou alteração<textarea value={reason} onChange={(event) => setReason(event.target.value)} rows={3} placeholder="Ex.: colaborador saiu, acesso temporário finalizado, mudança de função..." /></label>
+        {isSelf && <div className="permission-note compact">Você não pode remover o próprio acesso principal.</div>}
         {error && <div className="form-error">{error}</div>}
-        <footer className="form-footer"><span>Tudo fica registrado na auditoria.</span><button type="button" className="button secondary" onClick={onClose}>Cancelar</button><button className={active ? "button primary" : "button danger"} disabled={saving}>{saving ? "Salvando..." : active ? "Salvar permissÃ£o" : "Remover acesso"}</button></footer>
+        <footer className="form-footer"><span>Tudo fica registrado na auditoria.</span><button type="button" className="button secondary" onClick={onClose}>Cancelar</button><button className={active ? "button primary" : "button danger"} disabled={saving}>{saving ? "Salvando..." : active ? "Salvar permissão" : "Remover acesso"}</button></footer>
       </form>
     </Modal>
   );
@@ -836,24 +853,24 @@ function Detail({ material, movements, user, onClose, onMove, onEdit, onRemove }
   return (
     <div className="drawer-backdrop" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
       <aside className="detail-drawer">
-        <header><span className="kicker">FICHA DO PRODUTO</span><button onClick={onClose}>Ã—</button></header>
+        <header><span className="kicker">FICHA DO PRODUTO</span><button onClick={onClose}>×</button></header>
         <Photo material={material} className="detail-photo" />
-        <div className="detail-heading"><span>{material.code}</span><h2>{material.name}</h2><p>{material.brand} Â· {material.model}</p><Status value={material.status} /></div>
-        <div className="location-block"><span>LOCALIZAÃ‡ÃƒO ATUAL</span><strong>{material.current_location}</strong><small>Atualizado por {material.last_changed_by} em {formatDate(material.last_movement_at, true)}</small></div>
-        <div className="detail-actions"><button className="button primary" onClick={onMove}>Movimentar <span>â†’</span></button><button className="button secondary" onClick={onEdit}>Editar produto</button></div>
-        <dl className="detail-data"><div><dt>Categoria</dt><dd>{material.category}</dd></div><div><dt>Cor</dt><dd>{material.color || "â€”"}</dd></div><div><dt>Entrada</dt><dd>{formatDate(material.entry_date)}</dd></div><div><dt>Cadastrado por</dt><dd>{material.registered_by}</dd></div></dl>
-        {material.source_ref && <div className="detail-note"><span>PEDIDO / REFERÃŠNCIA</span><p>{material.source_ref}</p></div>}
-        {material.description && <div className="detail-note"><span>OBSERVAÃ‡Ã•ES</span><p>{material.description}</p></div>}
-        {(material.invoice_number || material.invoice_date || material.invoice_link || material.invoice_note) && <div className="invoice-link invoice-card"><span>NF</span><div><small>NOTA FISCAL</small><strong>{material.invoice_number || "Sem nÃºmero informado"}</strong>{material.invoice_date && <small>{formatDate(material.invoice_date)}</small>}{material.invoice_note && <p>{material.invoice_note}</p>}</div>{material.invoice_link && <a href={material.invoice_link} target="_blank" rel="noreferrer">Abrir link â†—</a>}</div>}
-        <section className="timeline"><span className="kicker">HISTÃ“RICO</span><h3>Linha do tempo</h3>
+        <div className="detail-heading"><span>{material.code}</span><h2>{material.name}</h2><p>{material.brand} · {material.model}</p><Status value={material.status} /></div>
+        <div className="location-block"><span>LOCALIZAÇÃO ATUAL</span><strong>{material.current_location}</strong><small>Atualizado por {material.last_changed_by} em {formatDate(material.last_movement_at, true)}</small></div>
+        <div className="detail-actions"><button className="button primary" onClick={onMove}>Movimentar <span>→</span></button><button className="button secondary" onClick={onEdit}>Editar produto</button></div>
+        <dl className="detail-data"><div><dt>Categoria</dt><dd>{material.category}</dd></div><div><dt>Cor</dt><dd>{material.color || "—"}</dd></div><div><dt>Entrada</dt><dd>{formatDate(material.entry_date)}</dd></div><div><dt>Cadastrado por</dt><dd>{material.registered_by}</dd></div></dl>
+        {material.source_ref && <div className="detail-note"><span>PEDIDO / REFERÊNCIA</span><p>{material.source_ref}</p></div>}
+        {material.description && <div className="detail-note"><span>OBSERVAÇÕES</span><p>{material.description}</p></div>}
+        {(material.invoice_number || material.invoice_date || material.invoice_link || material.invoice_note) && <div className="invoice-link invoice-card"><span>NF</span><div><small>NOTA FISCAL</small><strong>{material.invoice_number || "Sem número informado"}</strong>{material.invoice_date && <small>{formatDate(material.invoice_date)}</small>}{material.invoice_note && <p>{material.invoice_note}</p>}</div>{material.invoice_link && <a href={material.invoice_link} target="_blank" rel="noreferrer">Abrir link ↗</a>}</div>}
+        <section className="timeline"><span className="kicker">HISTÓRICO</span><h3>Linha do tempo</h3>
           {history.map((movement) => (
-            <div className="timeline-item" key={movement.id}><time>{formatDate(movement.moved_at, true)}</time><i /><div><strong>Movido para {movement.new_location}</strong><p>Origem: {movement.previous_location}</p><small>{movement.user_name}{movement.note ? ` Â· ${movement.note}` : ""}</small></div></div>
+            <div className="timeline-item" key={movement.id}><time>{formatDate(movement.moved_at, true)}</time><i /><div><strong>Movido para {movement.new_location}</strong><p>Origem: {movement.previous_location}</p><small>{movement.user_name}{movement.note ? ` · ${movement.note}` : ""}</small></div></div>
           ))}
         </section>
         <section className="qr-block">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(qrValue)}`} alt={`QR Code de ${material.name}`} />
-          <div><span className="kicker">ACESSO RÃPIDO</span><h3>QR Code individual</h3><p>Use na etiqueta fÃ­sica para abrir esta ficha.</p><button className="button secondary" onClick={() => window.print()}>Imprimir etiqueta</button></div>
+          <div><span className="kicker">ACESSO RÁPIDO</span><h3>QR Code individual</h3><p>Use na etiqueta física para abrir esta ficha.</p><button className="button secondary" onClick={() => window.print()}>Imprimir etiqueta</button></div>
         </section>
         {(user.role === "Administrador" || user.role === "Gerente") && <button className="remove-product-button" onClick={onRemove}>Remover produto do estoque</button>}
       </aside>
@@ -914,7 +931,7 @@ export function EkkoApp() {
         window.setTimeout(() => setToast(""), 3200);
       }
     } catch {
-      setToast("NÃ£o foi possÃ­vel carregar os dados.");
+      setToast("Não foi possível carregar os dados.");
     } finally {
       setLoading(false);
     }
@@ -941,17 +958,17 @@ export function EkkoApp() {
           <div><strong>Sistema de Banheiras</strong><span>e Amostras</span></div>
         </div>
         <nav>
-          <span className="nav-label">NAVEGAÃ‡ÃƒO</span>
+          <span className="nav-label">NAVEGAÇÃO</span>
           {navItems.map((item) => <button key={item.key} className={nav === item.key ? "active" : ""} onClick={() => { setNav(item.key); setMobileMenu(false); }}><i>{item.icon}</i><span>{item.label}</span>{item.key === "materials" && <b>{data.materials.length}</b>}</button>)}
         </nav>
-        <div className="sidebar-company"><span>OperaÃ§Ã£o</span>{/* eslint-disable-next-line @next/next/no-img-element */}<img src="/ekko-revestimentos.png" alt="Ekko Revestimentos" /></div>
-        <div className="sidebar-user"><span className="user-avatar">{initials(user.name)}</span><div><strong>{user.name}</strong><small>{user.role}</small></div><button onClick={logout} aria-label="Sair">â†—</button></div>
+        <div className="sidebar-company"><span>Ekko Revestimentos</span>{/* eslint-disable-next-line @next/next/no-img-element */}<img src="/ekko-revestimentos-transparent.png" alt="Ekko Revestimentos" /></div>
+        <div className="sidebar-user"><span className="user-avatar">{initials(user.name)}</span><div><strong>{user.name}</strong><small>{user.role}</small></div><button onClick={logout} aria-label="Sair">↗</button></div>
         <footer>Desenvolvido por <strong>Pedro Mariniello</strong></footer>
       </aside>
       {mobileMenu && <button className="mobile-overlay" aria-label="Fechar menu" onClick={() => setMobileMenu(false)} />}
       <main className="workspace">
         <header className="topbar">
-          <button className="menu-button" onClick={() => setMobileMenu(true)}>â˜°</button>
+          <button className="menu-button" onClick={() => setMobileMenu(true)}>☰</button>
           <div><span>EKkO REVESTIMENTOS</span><h1>{titles[nav]}</h1></div>
           <button className="quick-add" onClick={() => setNewMaterial(true)}>+ Novo produto</button>
           <span className="top-avatar">{initials(user.name)}</span>
@@ -972,13 +989,13 @@ export function EkkoApp() {
         </div>
       </main>
       {newMaterial && <NewMaterial data={data} user={user} onClose={() => setNewMaterial(false)} onSaved={() => refreshData("Produto cadastrado com foto.")} />}
-      {newUser && <NewUser currentUser={user} onClose={() => setNewUser(false)} onSaved={() => refreshData("UsuÃ¡rio criado com sucesso.")} />}
+      {newUser && <NewUser currentUser={user} onClose={() => setNewUser(false)} onSaved={() => refreshData("Usuário criado com sucesso.")} />}
       {accessUser && <EditUserAccess target={accessUser} currentUser={user} onClose={() => setAccessUser(null)} onSaved={() => refreshData("Acesso atualizado e registrado na auditoria.")} />}
-      {moveMaterial && <MoveMaterial material={moveMaterial} locations={data.locations} user={user} onClose={() => setMoveMaterial(null)} onSaved={() => refreshData("MovimentaÃ§Ã£o registrada.")} />}
-      {editMaterial && <EditMaterial material={data.materials.find((item) => item.id === editMaterial.id) || editMaterial} user={user} onClose={() => setEditMaterial(null)} onSaved={() => refreshData("AlteraÃ§Ãµes salvas no histÃ³rico.")} />}
-      {removeMaterial && <RemoveMaterial material={removeMaterial} user={user} onClose={() => setRemoveMaterial(null)} onSaved={() => refreshData("Produto removido e registrado no histÃ³rico.")} />}
+      {moveMaterial && <MoveMaterial material={moveMaterial} locations={data.locations} user={user} onClose={() => setMoveMaterial(null)} onSaved={() => refreshData("Movimentação registrada.")} />}
+      {editMaterial && <EditMaterial material={data.materials.find((item) => item.id === editMaterial.id) || editMaterial} user={user} onClose={() => setEditMaterial(null)} onSaved={() => refreshData("Alterações salvas no histórico.")} />}
+      {removeMaterial && <RemoveMaterial material={removeMaterial} user={user} onClose={() => setRemoveMaterial(null)} onSaved={() => refreshData("Produto removido e registrado no histórico.")} />}
       {detailMaterial && <Detail material={data.materials.find((item) => item.id === detailMaterial.id) || detailMaterial} movements={data.movements} user={user} onClose={() => setDetailMaterial(null)} onMove={() => { setMoveMaterial(detailMaterial); setDetailMaterial(null); }} onEdit={() => { setEditMaterial(detailMaterial); setDetailMaterial(null); }} onRemove={() => { setRemoveMaterial(detailMaterial); setDetailMaterial(null); }} />}
-      {toast && <div className="toast"><span>âœ“</span>{toast}</div>}
+      {toast && <div className="toast"><span>✓</span>{toast}</div>}
     </div>
   );
 }

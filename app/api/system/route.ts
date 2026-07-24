@@ -87,7 +87,7 @@ async function getSystemData() {
     const announcement = withId(doc);
     const user = userById.get(announcement.user_id) || ({} as AnyRecord);
     return { ...announcement, user_name: user.name || "Usuario" };
-  }).sort((a: AnyRecord, b: AnyRecord) => Number(b.pinned || 0) - Number(a.pinned || 0) || String(b.created_at || "").localeCompare(String(a.created_at || ""))).slice(0, 30);
+  }).filter((announcement: AnyRecord) => !announcement.deleted_at).sort((a: AnyRecord, b: AnyRecord) => Number(b.pinned || 0) - Number(a.pinned || 0) || String(b.created_at || "").localeCompare(String(a.created_at || ""))).slice(0, 30);
 
   return {
     materials,
@@ -408,6 +408,20 @@ export async function POST(request: Request) {
     if (!title || !message) return Response.json({ error: "Preencha o titulo e a mensagem do aviso." }, { status: 400 });
     const announcementId = id("ANN");
     await db.collection("announcements").doc(announcementId).set({ id: announcementId, user_id: actor.id, title, message, pinned: Boolean(payload.pinned), created_at: now });
+    return Response.json({ ok: true });
+  }
+
+  if (action === "removeAnnouncement") {
+    const announcementId = String(payload.announcementId || "");
+    if (!announcementId) return Response.json({ error: "Aviso nao informado." }, { status: 400 });
+    const ref = db.collection("announcements").doc(announcementId);
+    const snap = await ref.get();
+    const announcement = snap.data() as AnyRecord | undefined;
+    if (!announcement || announcement.deleted_at) return Response.json({ error: "Aviso nao encontrado." }, { status: 404 });
+    if (String(announcement.user_id) !== String(actor.id)) return Response.json({ error: "Somente quem publicou o aviso pode remove-lo." }, { status: 403 });
+    await ref.update({ deleted_at: now, deleted_by: actor.id });
+    const auditId = id("AUD");
+    await db.collection("audit_logs").doc(auditId).set({ id: auditId, user_id: actor.id, action: "Remocao de aviso", material_id: null, changed_field: "Aviso", previous_value: announcement.title || "", new_value: "Removido", created_at: now });
     return Response.json({ ok: true });
   }
 

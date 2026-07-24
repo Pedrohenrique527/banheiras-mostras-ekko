@@ -84,7 +84,7 @@ img { display: block; }
 .route-animation em { animation: pulse 2s infinite; background: var(--cyan); border-radius: 50%; box-shadow: 0 0 0 5px rgba(71,210,221,.12); height: 6px; margin-left: 18px; width: 6px; }
 .login-company { align-items: center; border-top: 1px solid rgba(255,255,255,.09); display: flex; gap: 24px; margin-top: 42px; padding-top: 25px; position: relative; z-index: 1; }
 .login-company span { color: #76889a; font-size: 10px; letter-spacing: .13em; text-transform: uppercase; }
-.login-company img { filter: invert(1); height: 42px; object-fit: contain; opacity: .78; width: 124px; }
+.login-company img { height: 68px; object-fit: contain; opacity: 1; width: 205px; }
 .login-access { align-items: center; background: white; display: flex; flex-direction: column; justify-content: center; padding: 56px clamp(44px, 6vw, 88px) 28px; }
 .login-form { max-width: 420px; width: 100%; }
 .login-form h2 { font-size: 34px; letter-spacing: -.035em; margin: 14px 0 8px; }
@@ -131,17 +131,17 @@ input:focus, select:focus, textarea:focus { border-color: #7197e9; box-shadow: 0
 .sidebar nav i { align-items: center; border: 1px solid #355067; border-radius: 5px; display: flex; font-size: 12px; font-style: normal; height: 25px; justify-content: center; width: 25px; }
 .sidebar nav span { font-size: 12px; font-weight: 600; }
 .sidebar nav b { background: #24394d; border-radius: 12px; color: #a9bac8; font-size: 9px; margin-left: auto; padding: 3px 7px; }
-.sidebar-company { border-top: 1px solid rgba(255,255,255,.08); margin-top: auto; padding: 22px 10px; }
+.sidebar-company { border-top: 1px solid rgba(255,255,255,.08); margin-top: auto; padding: 22px 10px 18px; }
 .sidebar-company span { color: #526477; display: block; font-size: 9px; letter-spacing: .15em; margin-bottom: 10px; text-transform: uppercase; }
-.sidebar-company img { filter: invert(1); height: 34px; object-fit: contain; object-position: left; opacity: .75; width: 102px; }
+.sidebar-company img { height: 62px; object-fit: contain; object-position: left; opacity: 1; width: 168px; }
 .sidebar-user { align-items: center; border-top: 1px solid rgba(255,255,255,.08); display: flex; gap: 9px; padding: 18px 6px; }
 .user-avatar, .top-avatar { align-items: center; background: #223e58; border-radius: 50%; color: #bcecf0; display: flex; font-size: 10px; font-weight: 800; height: 34px; justify-content: center; width: 34px; }
 .sidebar-user div { display: flex; flex: 1; flex-direction: column; min-width: 0; }
 .sidebar-user strong { font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sidebar-user small { color: #718598; font-size: 9px; margin-top: 3px; }
 .sidebar-user button { background: transparent; border: 0; color: #728698; font-size: 16px; }
-.sidebar > footer { color: #46596c; font-size: 8px; line-height: 1.6; padding: 0 8px; }
-.sidebar > footer strong { color: #718395; }
+.sidebar > footer { color: #7890a5; font-size: 10px; line-height: 1.6; padding: 0 8px 5px; }
+.sidebar > footer strong { color: #dce8f1; font-weight: 700; }
 .workspace { min-width: 0; }
 .topbar { align-items: center; background: white; border-bottom: 1px solid var(--line); display: flex; min-height: 84px; padding: 0 clamp(24px, 3vw, 48px); position: sticky; top: 0; z-index: 20; }
 .topbar > div { margin-right: auto; }
@@ -267,6 +267,9 @@ button:hover .product-photo img { transform: scale(1.025); }
 .report-toolbar { align-items: flex-end; display: flex; justify-content: space-between; gap: 20px; }
 .report-toolbar h2 { font-size: 25px; letter-spacing: -.04em; margin: 7px 0 4px; }
 .report-toolbar p { color: var(--muted); font-size: 10px; margin: 0; }
+.report-total { align-items: center; background: var(--navy); border-radius: 9px; color: white; display: flex; gap: 10px; padding: 12px 16px; }
+.report-total strong { font-size: 27px; letter-spacing: -.04em; }
+.report-total span { color: #b9c9d7; font-size: 9px; font-weight: 700; max-width: 68px; line-height: 1.3; text-transform: uppercase; }
 .report-actions { display: flex; gap: 9px; }
 .report-filters { align-items: end; background: #f7f9fa; border: 1px solid var(--line); border-radius: 9px; display: flex; gap: 14px; padding: 14px 18px; }
 .report-filters label { color: #637281; display: flex; flex-direction: column; font-size: 9px; font-weight: 700; gap: 6px; min-width: 190px; }
@@ -283,10 +286,14 @@ button:hover .product-photo img { transform: scale(1.025); }
 .report-row small { color: var(--muted); font-size: 8px; margin-top: 4px; }
 .report-empty { color: var(--muted); padding: 50px; text-align: center; }
 .report-footnote { color: #8b97a1; font-size: 9px; margin: 0; }
+.notice-meta { align-items: center; display: flex; justify-content: space-between; gap: 8px; }
+.notice-remove { background: transparent; border: 0; color: #b04444; font-size: 8px; font-weight: 700; padding: 2px 0; text-decoration: underline; }
 @media print {
   .sidebar, .topbar, .announcement-bar, .report-actions, .report-filters, .report-footnote { display: none !important; }
   .workspace, .page-content { padding: 0; }
   .report-toolbar { display: block; }
+  .report-total { background: white; border: 1px solid #ddd; color: #111; display: inline-flex; margin: 12px 0; }
+  .report-total span { color: #555; }
   .report-toolbar h2 { font-size: 20px; }
   .report-head, .report-row { min-width: 0; }
   .surface { border: 1px solid #ddd; box-shadow: none; }
