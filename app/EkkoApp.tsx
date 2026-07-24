@@ -231,7 +231,7 @@ function Login({ onLogin }: { onLogin: (user: User) => Promise<void> }) {
   );
 }
 
-function ForcePasswordChange({ user, onComplete }: { user: User; onComplete: (password: string) => Promise<void> }) {
+function ForcePasswordChange({ user, onComplete, onBack }: { user: User; onComplete: (password: string) => Promise<void>; onBack: () => Promise<void> }) {
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -247,7 +247,7 @@ function ForcePasswordChange({ user, onComplete }: { user: User; onComplete: (pa
     try { await onComplete(password); } catch (changeError) { setError(changeError instanceof Error ? changeError.message : "Não foi possível alterar a senha."); } finally { setSaving(false); }
   }
 
-  return <main className="password-change-page"><form className="password-change-card" onSubmit={submit}><img src="/ekko-revestimentos-transparent.png" alt="Ekko Revestimentos" /><span className="kicker">PRIMEIRO ACESSO</span><h1>Crie sua senha pessoal</h1><p>Olá, {user.name}. Por segurança, troque a senha inicial antes de continuar.</p><label>Nova senha<div className="password-field"><input autoFocus type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} minLength={8} required /><button type="button" onClick={() => setShowPassword((value) => !value)}>{showPassword ? "Ocultar" : "Mostrar"}</button></div></label><label>Repita a nova senha<div className="password-field"><input type={showConfirmation ? "text" : "password"} value={confirmation} onChange={(event) => setConfirmation(event.target.value)} minLength={8} required /><button type="button" onClick={() => setShowConfirmation((value) => !value)}>{showConfirmation ? "Ocultar" : "Mostrar"}</button></div></label>{error && <div className="form-error">{error}</div>}<button className="button primary wide" disabled={saving}>{saving ? "Salvando..." : "Continuar"}<span>→</span></button><small>A senha deve ter no mínimo 8 caracteres.</small></form></main>;
+  return <main className="password-change-page"><form className="password-change-card" onSubmit={submit}><img src="/ekko-revestimentos-transparent.png" alt="Ekko Revestimentos" /><span className="kicker">PRIMEIRO ACESSO</span><h1>Crie sua senha pessoal</h1><p>Olá, {user.name}. Por segurança, troque a senha inicial antes de continuar.</p><label>Nova senha<div className="password-field"><input autoFocus type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} minLength={8} required /><button type="button" onClick={() => setShowPassword((value) => !value)}>{showPassword ? "Ocultar" : "Mostrar"}</button></div></label><label>Repita a nova senha<div className="password-field"><input type={showConfirmation ? "text" : "password"} value={confirmation} onChange={(event) => setConfirmation(event.target.value)} minLength={8} required /><button type="button" onClick={() => setShowConfirmation((value) => !value)}>{showConfirmation ? "Ocultar" : "Mostrar"}</button></div></label>{error && <div className="form-error">{error}</div>}<button className="button primary wide" disabled={saving}>{saving ? "Salvando..." : "Continuar"}<span>→</span></button><button type="button" className="button secondary wide password-back" onClick={onBack}>Voltar para a tela de login</button><small>A senha deve ter no mínimo 8 caracteres.</small></form></main>;
 }
 
 function Overview({ data, onOpen, onMove, onShowAll }: {
@@ -1009,7 +1009,7 @@ export function EkkoApp() {
   }
 
   if (!user) return <Login onLogin={login} />;
-  if (user.must_change_password) return <ForcePasswordChange user={user} onComplete={completePasswordChange} />;
+  if (user.must_change_password) return <ForcePasswordChange user={user} onComplete={completePasswordChange} onBack={logout} />;
 
   return (
     <div className="app-layout">
