@@ -16,18 +16,16 @@ Sistema corporativo da **Ekko Revestimentos** para cadastro visual, estoque, loc
 - Movimentacoes permanentes com origem, destino, responsavel, data e observacao
 - Linha do tempo individual e auditoria de alteracoes
 - Gestao de usuarios
+- Somente o proprietario do sistema pode criar acessos, alterar permissoes e remover contas
 - Mural de avisos para todos ao entrarem no sistema
 - Chat interno da equipe
 - QR Code individual por produto
 
 O sistema comeca sem produtos pre-cadastrados. A equipe inclui cada item com foto durante o cadastro.
 
-## Acesso inicial
+## Acessos
 
-- E-mail: `admin@ekko.com.br`
-- Senha: `Ekko@2026`
-
-Depois do primeiro login, entre em **Usuarios** e crie os 5 acessos da equipe usando o botao **Novo usuario**.
+O proprietario entra no sistema, acessa **Usuarios** e cria os acessos da equipe usando o botao **Novo usuario**.
 
 ## Tecnologias
 
@@ -55,6 +53,14 @@ CLOUDINARY_CLOUD_NAME=seu-cloud-name
 CLOUDINARY_API_KEY=sua-api-key
 CLOUDINARY_API_SECRET=seu-api-secret
 ```
+
+Opcionalmente, defina quem e o dono do sistema:
+
+```env
+SYSTEM_OWNER_EMAIL=admin@ekko.com.br
+```
+
+Se essa variavel nao for preenchida, o sistema usa `admin@ekko.com.br` como proprietario.
 
 ## Executar localmente
 

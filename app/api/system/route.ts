@@ -27,6 +27,11 @@ function normalizeStatus(location: string) {
   return "Disponivel";
 }
 
+function isOwner(actor: AnyRecord) {
+  const ownerEmail = (process.env.SYSTEM_OWNER_EMAIL || "admin@ekko.com.br").toLowerCase();
+  return String(actor.email || "").toLowerCase() === ownerEmail;
+}
+
 async function getSystemData() {
   await ensureFirebaseSeed();
   const db = firestore();
@@ -296,7 +301,7 @@ export async function POST(request: Request) {
   }
 
   if (action === "createUser") {
-    if (actor.role !== "Administrador") return Response.json({ error: "Somente administradores podem criar acessos." }, { status: 403 });
+    if (!isOwner(actor)) return Response.json({ error: "Somente o proprietario do sistema pode criar acessos e permissoes." }, { status: 403 });
     const newUser = payload.user as Record<string, string>;
     if (!newUser.password || newUser.password.length < 8) return Response.json({ error: "A senha inicial deve ter ao menos 8 caracteres." }, { status: 400 });
 
@@ -329,6 +334,63 @@ export async function POST(request: Request) {
     });
     await batch.commit();
     return Response.json({ ok: true, id: newUserId }, { status: 201 });
+  }
+
+  if (action === "updateUserAccess") {
+    if (!isOwner(actor)) return Response.json({ error: "Somente o proprietario do sistema pode alterar acessos e permissoes." }, { status: 403 });
+    const targetUserId = String(payload.targetUserId || "");
+    const access = payload.access as Record<string, string | boolean>;
+    if (!targetUserId) return Response.json({ error: "Usuario nao informado." }, { status: 400 });
+    if (targetUserId === actor.id && access.active === false) return Response.json({ error: "Voce nao pode remover o proprio acesso principal." }, { status: 400 });
+
+    const ref = db.collection("users").doc(targetUserId);
+    const snap = await ref.get();
+    const target = snap.data() as AnyRecord | undefined;
+    if (!target) return Response.json({ error: "Usuario nao encontrado." }, { status: 404 });
+
+    const nextRole = String(access.role || target.role || "Usuario");
+    const nextActive = typeof access.active === "boolean" ? access.active : Boolean(target.active);
+    const reason = String(access.reason || "").trim();
+    const statusText = nextActive ? "Ativo" : "Acesso removido";
+
+    await ref.update({
+      role: nextRole,
+      active: nextActive,
+      access_status: statusText,
+      access_reason: reason,
+      access_changed_by: actor.name,
+      access_changed_at: now,
+      updated_at: now,
+      ...(nextActive ? { restored_at: now } : { removed_at: now, removed_by: actor.name }),
+    });
+
+    const batch = db.batch();
+    const roleAudit = id("AUD");
+    batch.set(db.collection("audit_logs").doc(roleAudit), {
+      id: roleAudit,
+      user_id: actor.id,
+      action: "Alteracao de permissao",
+      material_id: null,
+      changed_field: `Usuario: ${target.email}`,
+      previous_value: target.role || "",
+      new_value: nextRole,
+      created_at: now,
+    });
+    if (Boolean(target.active) !== nextActive) {
+      const statusAudit = id("AUD");
+      batch.set(db.collection("audit_logs").doc(statusAudit), {
+        id: statusAudit,
+        user_id: actor.id,
+        action: nextActive ? "Reativacao de acesso" : "Remocao de acesso",
+        material_id: null,
+        changed_field: `Usuario: ${target.email}`,
+        previous_value: target.active ? "Ativo" : "Bloqueado",
+        new_value: nextActive ? "Ativo" : `Bloqueado${reason ? ` - ${reason}` : ""}`,
+        created_at: now,
+      });
+    }
+    await batch.commit();
+    return Response.json({ ok: true });
   }
 
   if (action === "createChatMessage") {

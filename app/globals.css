@@ -107,10 +107,6 @@ input, select, textarea {
 input:focus, select:focus, textarea:focus { border-color: #7197e9; box-shadow: 0 0 0 3px rgba(47,105,223,.1); }
 .login-form input, .simple-form input, .simple-form select, .move-form textarea { display: block; height: 48px; margin-top: 8px; padding: 0 13px; width: 100%; }
 .login-form .wide { margin-top: 6px; }
-.first-access { background: #f5f7fa; border-left: 3px solid var(--cyan); border-radius: 4px; display: grid; gap: 4px; margin-top: 28px; padding: 14px 16px; }
-.first-access span { color: #81909f; font-size: 9px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
-.first-access strong { font-size: 12px; }
-.first-access small { color: var(--muted); font-size: 11px; }
 .login-access > footer { color: #9aa4ad; font-size: 10px; margin-top: auto; padding-top: 36px; }
 .form-error { background: #fff0f0; border: 1px solid #f0cccc; border-radius: 6px; color: #aa3535; font-size: 12px; padding: 11px 13px; }
 .mobile-identity { display: none; }
@@ -266,6 +262,36 @@ button:hover .product-photo img { transform: scale(1.025); }
 .empty-state { background: white; border: 1px dashed #cfd7de; border-radius: 10px; padding: 60px; text-align: center; }
 .empty-state p { color: var(--muted); font-size: 11px; }
 
+/* Product report */
+.report-page { display: flex; flex-direction: column; gap: 18px; }
+.report-toolbar { align-items: flex-end; display: flex; justify-content: space-between; gap: 20px; }
+.report-toolbar h2 { font-size: 25px; letter-spacing: -.04em; margin: 7px 0 4px; }
+.report-toolbar p { color: var(--muted); font-size: 10px; margin: 0; }
+.report-actions { display: flex; gap: 9px; }
+.report-filters { align-items: end; background: #f7f9fa; border: 1px solid var(--line); border-radius: 9px; display: flex; gap: 14px; padding: 14px 18px; }
+.report-filters label { color: #637281; display: flex; flex-direction: column; font-size: 9px; font-weight: 700; gap: 6px; min-width: 190px; }
+.report-filters select { height: 36px; padding: 0 9px; }
+.report-filters > strong { color: var(--ink); font-size: 10px; margin-left: auto; padding-bottom: 10px; }
+.report-table-wrap { overflow: hidden; }
+.report-table { overflow-x: auto; }
+.report-head, .report-row { align-items: center; display: grid; gap: 18px; grid-template-columns: 1.5fr 1fr 1fr .9fr 1fr; min-width: 850px; padding: 0 22px; }
+.report-head { background: #f7f9fa; color: #85919c; font-size: 8px; font-weight: 800; letter-spacing: .09em; min-height: 42px; text-transform: uppercase; }
+.report-row { border-bottom: 1px solid var(--line); min-height: 68px; }
+.report-row:last-child { border-bottom: 0; }
+.report-row > span { display: flex; flex-direction: column; font-size: 10px; }
+.report-row strong { font-size: 10px; }
+.report-row small { color: var(--muted); font-size: 8px; margin-top: 4px; }
+.report-empty { color: var(--muted); padding: 50px; text-align: center; }
+.report-footnote { color: #8b97a1; font-size: 9px; margin: 0; }
+@media print {
+  .sidebar, .topbar, .announcement-bar, .report-actions, .report-filters, .report-footnote { display: none !important; }
+  .workspace, .page-content { padding: 0; }
+  .report-toolbar { display: block; }
+  .report-toolbar h2 { font-size: 20px; }
+  .report-head, .report-row { min-width: 0; }
+  .surface { border: 1px solid #ddd; box-shadow: none; }
+}
+
 /* History and users */
 .history-page, .users-page { overflow: hidden; }
 .history-header { min-height: 68px !important; }
@@ -290,14 +316,24 @@ button.table-row:hover { background: #fafbfd; }
 .users-help { color: var(--muted); font-size: 9px; font-weight: 400; margin: 4px 0 0; }
 .permission-note { background: #f4f7fa; border-bottom: 1px solid var(--line); color: #657485; font-size: 10px; padding: 12px 24px; }
 .user-list { padding: 0 24px; }
-.user-row { align-items: center; border-bottom: 1px solid var(--line); display: grid; gap: 14px; grid-template-columns: 38px 1fr 140px 100px; min-height: 70px; }
+.user-row { align-items: center; border-bottom: 1px solid var(--line); display: grid; gap: 14px; grid-template-columns: 38px 1fr 140px 100px 120px; min-height: 70px; }
 .user-row:last-child { border-bottom: 0; }
+.user-row.blocked { opacity: .68; }
 .user-row > div { display: flex; flex-direction: column; }
 .user-row strong { font-size: 11px; }
 .user-row small { color: var(--muted); font-size: 9px; margin-top: 3px; }
 .role { background: #edf2fa; border-radius: 20px; color: #49698f; font-size: 9px; justify-self: start; padding: 5px 10px; }
 .active-user { align-items: center; color: var(--green); display: flex; font-size: 9px; gap: 5px; }
 .active-user i { background: var(--green); border-radius: 50%; height: 5px; width: 5px; }
+.blocked-user { align-items: center; color: #b34b4b; display: flex; font-size: 9px; gap: 5px; }
+.blocked-user i { background: #b34b4b; border-radius: 50%; height: 5px; width: 5px; }
+.user-action { justify-self: end; }
+.access-target { align-items: center; background: #f6f8fa; border: 1px solid var(--line); border-radius: 8px; display: flex; gap: 12px; margin-bottom: 18px; padding: 13px; }
+.access-target div { display: flex; flex-direction: column; }
+.check-line { align-items: center; background: #f7f9fb; border: 1px solid var(--line); border-radius: 8px; display: flex !important; gap: 10px; padding: 13px; }
+.check-line input { height: 16px !important; margin: 0 !important; width: 16px !important; }
+.check-line span { font-size: 11px; font-weight: 700; }
+.permission-note.compact { border: 1px solid var(--line); border-radius: 8px; margin-bottom: 14px; padding: 11px 13px; }
 
 /* About */
 .about-page { align-items: center; display: flex; justify-content: center; min-height: calc(100vh - 180px); }
@@ -507,7 +543,7 @@ button.table-row:hover { background: #fafbfd; }
   .product-image-button .product-photo { height: 250px; }
   .users-page > header { align-items: flex-start; flex-direction: column; gap: 16px; padding: 18px; }
   .user-row { grid-template-columns: 38px 1fr; padding: 12px 0; }
-  .role, .active-user { grid-column: 2; }
+  .role, .active-user, .blocked-user, .user-action { grid-column: 2; justify-self: start; }
   .about-card { padding: 32px 20px; }
   .about-card h2 { font-size: 25px; }
   .modal-backdrop { padding: 0; }
